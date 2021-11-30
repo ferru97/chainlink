@@ -82,7 +82,7 @@ type ChainScopedOnlyConfig interface {
 type ChainScopedConfig interface {
 	config.GeneralConfig
 	ChainScopedOnlyConfig
-	Validate() error
+	Validate() ([]string, error)
 	// Both Configure() and PersistedConfig() should be accessed through ChainSet methods only.
 	Configure(config evmtypes.ChainCfg) error
 	PersistedConfig() evmtypes.ChainCfg
@@ -110,7 +110,7 @@ func NewChainScopedConfig(chainID *big.Int, cfg evmtypes.ChainCfg, orm evmtypes.
 	csorm := &chainScopedConfigORM{chainID, orm}
 	defaultSet, exists := chainSpecificConfigDefaultSets[chainID.Int64()]
 	if !exists {
-		logger.Warnf("Unrecognised chain %d, falling back to generic default configuration", chainID)
+		lggr.Warnf("Unrecognised chain %d, falling back to generic default configuration", chainID)
 		defaultSet = fallbackDefaultSet
 	}
 	css := chainScopedConfig{
@@ -125,11 +125,10 @@ func NewChainScopedConfig(chainID *big.Int, cfg evmtypes.ChainCfg, orm evmtypes.
 	return &css
 }
 
-func (c *chainScopedConfig) Validate() (err error) {
-	return multierr.Combine(
-		c.GeneralConfig.Validate(),
-		c.validate(),
-	)
+func (c *chainScopedConfig) Validate() (warns []string, err error) {
+	warns, err = c.GeneralConfig.Validate()
+	err = multierr.Combine(err, c.validate())
+	return
 }
 
 func (c *chainScopedConfig) Configure(config evmtypes.ChainCfg) (err error) {
@@ -177,13 +176,13 @@ func (c *chainScopedConfig) validate() (err error) {
 		err = multierr.Combine(err, errors.New("MIN_INCOMING_CONFIRMATIONS must be greater than or equal to 1"))
 	}
 	lc := ocrtypes.LocalConfig{
-		BlockchainTimeout:                      c.OCRBlockchainTimeout(),
+		BlockchainTimeout:                      c.OCRBlockchainTimeout(nil),
 		ContractConfigConfirmations:            c.OCRContractConfirmations(),
-		ContractConfigTrackerPollInterval:      c.OCRContractPollInterval(),
-		ContractConfigTrackerSubscribeInterval: c.OCRContractSubscribeInterval(),
+		ContractConfigTrackerPollInterval:      c.OCRContractPollInterval(nil),
+		ContractConfigTrackerSubscribeInterval: c.OCRContractSubscribeInterval(nil),
 		ContractTransmitterTransmitTimeout:     c.OCRContractTransmitterTransmitTimeout(),
 		DatabaseTimeout:                        c.OCRDatabaseTimeout(),
-		DataSourceTimeout:                      c.OCRObservationTimeout(),
+		DataSourceTimeout:                      c.OCRObservationTimeout(nil),
 		DataSourceGracePeriod:                  c.OCRObservationGracePeriod(),
 	}
 	if ocrerr := ocr.SanityCheckLocalConfig(lc); ocrerr != nil {
@@ -286,7 +285,7 @@ func (c *chainScopedConfig) EvmBalanceMonitorBlockDelay() uint16 {
 // EvmGasBumpThreshold is the number of blocks to wait before bumping gas again on unconfirmed transactions
 // Set to 0 to disable gas bumping
 func (c *chainScopedConfig) EvmGasBumpThreshold() uint64 {
-	val, ok := c.GeneralConfig.GlobalEvmGasBumpThreshold()
+	val, ok := c.GeneralConfig.GlobalEvmGasBumpThreshold(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmGasBumpThreshold", val)
 		return val
@@ -296,7 +295,7 @@ func (c *chainScopedConfig) EvmGasBumpThreshold() uint64 {
 
 // EvmGasBumpWei is the minimum fixed amount of wei by which gas is bumped on each transaction attempt
 func (c *chainScopedConfig) EvmGasBumpWei() *big.Int {
-	val, ok := c.GeneralConfig.GlobalEvmGasBumpWei()
+	val, ok := c.GeneralConfig.GlobalEvmGasBumpWei(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmGasBumpWei", val)
 		return val
@@ -316,7 +315,7 @@ func (c *chainScopedConfig) EvmGasBumpWei() *big.Int {
 // "in-flight" i.e. broadcast but unconfirmed at any one time
 // 0 value disables the limit
 func (c *chainScopedConfig) EvmMaxInFlightTransactions() uint32 {
-	val, ok := c.GeneralConfig.GlobalEvmMaxInFlightTransactions()
+	val, ok := c.GeneralConfig.GlobalEvmMaxInFlightTransactions(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmMaxInFlightTransactions", val)
 		return val
@@ -327,7 +326,7 @@ func (c *chainScopedConfig) EvmMaxInFlightTransactions() uint32 {
 // EvmMaxGasPriceWei is the maximum amount in Wei that a transaction will be
 // bumped to before abandoning it and marking it as errored.
 func (c *chainScopedConfig) EvmMaxGasPriceWei() *big.Int {
-	val, ok := c.GeneralConfig.GlobalEvmMaxGasPriceWei()
+	val, ok := c.GeneralConfig.GlobalEvmMaxGasPriceWei(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmMaxGasPriceWei", val)
 		return val
@@ -348,7 +347,7 @@ func (c *chainScopedConfig) EvmMaxGasPriceWei() *big.Int {
 // failing and rejecting send of any further transactions.
 // 0 value disables
 func (c *chainScopedConfig) EvmMaxQueuedTransactions() uint64 {
-	val, ok := c.GeneralConfig.GlobalEvmMaxQueuedTransactions()
+	val, ok := c.GeneralConfig.GlobalEvmMaxQueuedTransactions(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmMaxGasPriceWei", val)
 		return val
@@ -359,7 +358,7 @@ func (c *chainScopedConfig) EvmMaxQueuedTransactions() uint64 {
 // EvmMinGasPriceWei is the minimum amount in Wei that a transaction may be priced.
 // Chainlink will never send a transaction priced below this amount.
 func (c *chainScopedConfig) EvmMinGasPriceWei() *big.Int {
-	val, ok := c.GeneralConfig.GlobalEvmMinGasPriceWei()
+	val, ok := c.GeneralConfig.GlobalEvmMinGasPriceWei(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmMinGasPriceWei", val)
 		return val
@@ -370,7 +369,7 @@ func (c *chainScopedConfig) EvmMinGasPriceWei() *big.Int {
 
 // EvmGasLimitDefault sets the default gas limit for outgoing transactions.
 func (c *chainScopedConfig) EvmGasLimitDefault() uint64 {
-	val, ok := c.GeneralConfig.GlobalEvmGasLimitDefault()
+	val, ok := c.GeneralConfig.GlobalEvmGasLimitDefault(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmGasLimitDefault", val)
 		return val
@@ -387,7 +386,7 @@ func (c *chainScopedConfig) EvmGasLimitDefault() uint64 {
 
 // EvmGasLimitTransfer is the gas limit for an ordinary eth->eth transfer
 func (c *chainScopedConfig) EvmGasLimitTransfer() uint64 {
-	val, ok := c.GeneralConfig.GlobalEvmGasLimitTransfer()
+	val, ok := c.GeneralConfig.GlobalEvmGasLimitTransfer(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmGasLimitTransfer", val)
 		return val
@@ -397,7 +396,7 @@ func (c *chainScopedConfig) EvmGasLimitTransfer() uint64 {
 
 // EvmGasPriceDefault is the starting gas price for every transaction
 func (c *chainScopedConfig) EvmGasPriceDefault() *big.Int {
-	val, ok := c.GeneralConfig.GlobalEvmGasPriceDefault()
+	val, ok := c.GeneralConfig.GlobalEvmGasPriceDefault(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmGasPriceDefault", val)
 		return val
@@ -457,7 +456,7 @@ func (c *chainScopedConfig) SetEvmGasPriceDefault(value *big.Int) error {
 // A re-org occurs at height 46 starting at block 41, transaction is marked for rebroadcast
 // A re-org occurs at height 47 starting at block 41, transaction is NOT marked for rebroadcast
 func (c *chainScopedConfig) EvmFinalityDepth() uint32 {
-	val, ok := c.GeneralConfig.GlobalEvmFinalityDepth()
+	val, ok := c.GeneralConfig.GlobalEvmFinalityDepth(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmFinalityDepth", val)
 		return val
@@ -477,7 +476,7 @@ func (c *chainScopedConfig) EvmFinalityDepth() uint32 {
 // This number should be at least as large as `EvmFinalityDepth`.
 // There may be a small performance penalty to setting this to something very large (10,000+)
 func (c *chainScopedConfig) EvmHeadTrackerHistoryDepth() uint32 {
-	val, ok := c.GeneralConfig.GlobalEvmHeadTrackerHistoryDepth()
+	val, ok := c.GeneralConfig.GlobalEvmHeadTrackerHistoryDepth(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmHeadTrackerHistoryDepth", val)
 		return val
@@ -496,7 +495,7 @@ func (c *chainScopedConfig) EvmHeadTrackerHistoryDepth() uint32 {
 // to services that are only interested in the latest head every some time
 // Setting it to a zero duration disables sampling (every head will be delivered)
 func (c *chainScopedConfig) EvmHeadTrackerSamplingInterval() time.Duration {
-	val, ok := c.GeneralConfig.GlobalEvmHeadTrackerSamplingInterval()
+	val, ok := c.GeneralConfig.GlobalEvmHeadTrackerSamplingInterval(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmHeadTrackerSamplingInterval", val)
 		return val
@@ -514,7 +513,7 @@ func (c *chainScopedConfig) EvmHeadTrackerSamplingInterval() time.Duration {
 // BlockEmissionIdleWarningThreshold is the duration of time since last received head
 // to print a warning log message indicating not receiving heads
 func (c *chainScopedConfig) BlockEmissionIdleWarningThreshold() time.Duration {
-	val, ok := c.GeneralConfig.GlobalBlockEmissionIdleWarningThreshold()
+	val, ok := c.GeneralConfig.GlobalBlockEmissionIdleWarningThreshold(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("BlockEmissionIdleWarningThreshold", val)
 		return val
@@ -529,7 +528,7 @@ func (c *chainScopedConfig) BlockEmissionIdleWarningThreshold() time.Duration {
 // mempool.
 // See eth_resender.go for more details
 func (c *chainScopedConfig) EthTxResendAfterThreshold() time.Duration {
-	val, ok := c.GeneralConfig.GlobalEthTxResendAfterThreshold()
+	val, ok := c.GeneralConfig.GlobalEthTxResendAfterThreshold(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EthTxResendAfterThreshold", val)
 		return val
@@ -547,15 +546,18 @@ func (c *chainScopedConfig) EthTxResendAfterThreshold() time.Duration {
 // BlockHistoryEstimatorBatchSize sets the maximum number of blocks to fetch in one batch in the block history estimator
 // If the env var GAS_UPDATER_BATCH_SIZE is set to 0, it defaults to ETH_RPC_DEFAULT_BATCH_SIZE
 func (c *chainScopedConfig) BlockHistoryEstimatorBatchSize() (size uint32) {
-	val, ok := c.GeneralConfig.GlobalBlockHistoryEstimatorBatchSize()
+	val, ok := c.GeneralConfig.GlobalBlockHistoryEstimatorBatchSize(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("BlockHistoryEstimatorBatchSize", val)
 		size = val
 	} else {
-		valLegacy, set := lookupEnv("GAS_UPDATER_BATCH_SIZE", config.ParseUint32)
+		valLegacy, invalid, set := lookupEnv("GAS_UPDATER_BATCH_SIZE", config.ParseUint32)
+		if invalid != nil {
+			c.logger.Warn(invalid)
+		}
 		if set {
 			c.logEnvOverrideOnce("GAS_UPDATER_BATCH_SIZE", valLegacy)
-			logger.Warn("GAS_UPDATER_BATCH_SIZE is deprecated, please use BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE instead (or simply remove to use the default)")
+			c.logger.Warn("GAS_UPDATER_BATCH_SIZE is deprecated, please use BLOCK_HISTORY_ESTIMATOR_BATCH_SIZE instead (or simply remove to use the default)")
 			size = valLegacy.(uint32)
 		} else {
 			size = c.defaultSet.blockHistoryEstimatorBatchSize
@@ -576,15 +578,18 @@ func (c *chainScopedConfig) BlockHistoryEstimatorBatchSize() (size uint32) {
 // available from the connected node via RPC. In this case you will get false
 // "zero" blocks that are missing transactions.
 func (c *chainScopedConfig) BlockHistoryEstimatorBlockDelay() uint16 {
-	val, ok := c.GeneralConfig.GlobalBlockHistoryEstimatorBlockDelay()
+	val, ok := c.GeneralConfig.GlobalBlockHistoryEstimatorBlockDelay(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("BlockHistoryEstimatorBlockDelay", val)
 		return val
 	}
-	valLegacy, set := lookupEnv("GAS_UPDATER_BLOCK_DELAY", config.ParseUint16)
+	valLegacy, invalid, set := lookupEnv("GAS_UPDATER_BLOCK_DELAY", config.ParseUint16)
+	if invalid != nil {
+		c.logger.Warn(invalid)
+	}
 	if set {
 		c.logEnvOverrideOnce("GAS_UPDATER_BLOCK_DELAY", valLegacy)
-		logger.Warn("GAS_UPDATER_BLOCK_DELAY is deprecated, please use BLOCK_HISTORY_ESTIMATOR_BLOCK_DELAY instead (or simply remove to use the default)")
+		c.logger.Warn("GAS_UPDATER_BLOCK_DELAY is deprecated, please use BLOCK_HISTORY_ESTIMATOR_BLOCK_DELAY instead (or simply remove to use the default)")
 		return valLegacy.(uint16)
 	}
 	c.persistMu.RLock()
@@ -600,15 +605,18 @@ func (c *chainScopedConfig) BlockHistoryEstimatorBlockDelay() uint16 {
 // BlockHistoryEstimatorBlockHistorySize is the number of past blocks to keep in memory to
 // use as a basis for calculating a percentile gas price
 func (c *chainScopedConfig) BlockHistoryEstimatorBlockHistorySize() uint16 {
-	val, ok := c.GeneralConfig.GlobalBlockHistoryEstimatorBlockHistorySize()
+	val, ok := c.GeneralConfig.GlobalBlockHistoryEstimatorBlockHistorySize(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("BlockHistoryEstimatorBlockHistorySize", val)
 		return val
 	}
-	valLegacy, set := lookupEnv("GAS_UPDATER_BLOCK_HISTORY_SIZE", config.ParseUint16)
+	valLegacy, invalid, set := lookupEnv("GAS_UPDATER_BLOCK_HISTORY_SIZE", config.ParseUint16)
+	if invalid != nil {
+		c.logger.Warn(invalid)
+	}
 	if set {
 		c.logEnvOverrideOnce("GAS_UPDATER_BLOCK_HISTORY_SIZE", valLegacy)
-		logger.Warn("GAS_UPDATER_BLOCK_HISTORY_SIZE is deprecated, please use BLOCK_HISTORY_ESTIMATOR_BLOCK_HISTORY_SIZE instead (or simply remove to use the default)")
+		c.logger.Warn("GAS_UPDATER_BLOCK_HISTORY_SIZE is deprecated, please use BLOCK_HISTORY_ESTIMATOR_BLOCK_HISTORY_SIZE instead (or simply remove to use the default)")
 		return valLegacy.(uint16)
 	}
 	c.persistMu.RLock()
@@ -625,15 +633,18 @@ func (c *chainScopedConfig) BlockHistoryEstimatorBlockHistorySize() uint16 {
 // if the past transaction history contains four transactions with gas prices:
 // [100, 200, 300, 400], picking 25 for this number will give a value of 200
 func (c *chainScopedConfig) BlockHistoryEstimatorTransactionPercentile() uint16 {
-	val, ok := c.GeneralConfig.GlobalBlockHistoryEstimatorTransactionPercentile()
+	val, ok := c.GeneralConfig.GlobalBlockHistoryEstimatorTransactionPercentile(nil)
 	if ok {
 		c.logEnvOverrideOnce("BlockHistoryEstimatorTransactionPercentile", val)
 		return val
 	}
-	valLegacy, set := lookupEnv("GAS_UPDATER_TRANSACTION_PERCENTILE", config.ParseUint16)
+	valLegacy, invalid, set := lookupEnv("GAS_UPDATER_TRANSACTION_PERCENTILE", config.ParseUint16)
+	if invalid != nil {
+		c.logger.Warn(invalid)
+	}
 	if set {
 		c.logEnvOverrideOnce("GAS_UPDATER_TRANSACTION_PERCENTILE", valLegacy)
-		logger.Warn("GAS_UPDATER_TRANSACTION_PERCENTILE is deprecated, please use BLOCK_HISTORY_ESTIMATOR_PERCENTILE instead (or simply remove to use the default)")
+		c.logger.Warn("GAS_UPDATER_TRANSACTION_PERCENTILE is deprecated, please use BLOCK_HISTORY_ESTIMATOR_PERCENTILE instead (or simply remove to use the default)")
 		return valLegacy.(uint16)
 	}
 	return c.defaultSet.blockHistoryEstimatorTransactionPercentile
@@ -646,14 +657,17 @@ func (c *chainScopedConfig) GasEstimatorMode() string {
 		c.logEnvOverrideOnce("GasEstimatorMode", val)
 		return val
 	}
-	enabled, ok := lookupEnv("GAS_UPDATER_ENABLED", config.ParseBool)
-	if ok {
+	enabled, invalid, set := lookupEnv("GAS_UPDATER_ENABLED", config.ParseBool)
+	if invalid != nil {
+		c.logger.Warn(invalid)
+	}
+	if set {
 		c.logEnvOverrideOnce("GAS_UPDATER_ENABLED", enabled)
 		if enabled.(bool) {
-			logger.Warn("GAS_UPDATER_ENABLED has been deprecated, to enable the block history estimator, please use GAS_ESTIMATOR_MODE=BlockHistory instead (or simply remove to use the default)")
+			c.logger.Warn("GAS_UPDATER_ENABLED has been deprecated, to enable the block history estimator, please use GAS_ESTIMATOR_MODE=BlockHistory instead (or simply remove to use the default)")
 			return "BlockHistory"
 		}
-		logger.Warn("GAS_UPDATER_ENABLED has been deprecated, to disable the block history estimator, please use GAS_ESTIMATOR_MODE=FixedPrice instead (or simply remove to use the default)")
+		c.logger.Warn("GAS_UPDATER_ENABLED has been deprecated, to disable the block history estimator, please use GAS_ESTIMATOR_MODE=FixedPrice instead (or simply remove to use the default)")
 		return "FixedPrice"
 	}
 	c.persistMu.RLock()
@@ -667,7 +681,7 @@ func (c *chainScopedConfig) GasEstimatorMode() string {
 }
 
 func (c *chainScopedConfig) KeySpecificMaxGasPriceWei(addr gethcommon.Address) *big.Int {
-	val, ok := c.GeneralConfig.GlobalEvmMaxGasPriceWei()
+	val, ok := c.GeneralConfig.GlobalEvmMaxGasPriceWei(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmMaxGasPriceWei", val)
 		return val
@@ -715,7 +729,7 @@ func (c *chainScopedConfig) LinkContractAddress() string {
 // MIN_INCOMING_CONFIRMATIONS=1 would kick off a job after seeing the transaction in a block
 // MIN_INCOMING_CONFIRMATIONS=0 would kick off a job even before the transaction is mined, which is not supported
 func (c *chainScopedConfig) MinIncomingConfirmations() uint32 {
-	val, ok := c.GeneralConfig.GlobalMinIncomingConfirmations()
+	val, ok := c.GeneralConfig.GlobalMinIncomingConfirmations(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("MinIncomingConfirmations", val)
 		return val
@@ -736,7 +750,7 @@ func (c *chainScopedConfig) MinIncomingConfirmations() uint32 {
 // MIN_OUTGOING_CONFIRMATIONS=1 considers a transaction as "done" once it has been mined into one block
 // MIN_OUTGOING_CONFIRMATIONS=0 would consider a transaction as "done" even before it has been mined
 func (c *chainScopedConfig) MinRequiredOutgoingConfirmations() uint64 {
-	val, ok := c.GeneralConfig.GlobalMinRequiredOutgoingConfirmations()
+	val, ok := c.GeneralConfig.GlobalMinRequiredOutgoingConfirmations(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("MinRequiredOutgoingConfirmations", val)
 		return val
@@ -754,7 +768,7 @@ func (c *chainScopedConfig) MinRequiredOutgoingConfirmations() uint64 {
 // MinimumContractPayment represents the minimum amount of LINK that must be
 // supplied for a contract to be considered.
 func (c *chainScopedConfig) MinimumContractPayment() *assets.Link {
-	val, ok := c.GeneralConfig.GlobalMinimumContractPayment()
+	val, ok := c.GeneralConfig.GlobalMinimumContractPayment(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("MinimumContractPayment", val)
 		return val
@@ -772,7 +786,7 @@ func (c *chainScopedConfig) MinimumContractPayment() *assets.Link {
 // EvmGasBumpTxDepth is the number of transactions to gas bump starting from oldest.
 // Set to 0 for no limit (i.e. bump all)
 func (c *chainScopedConfig) EvmGasBumpTxDepth() uint16 {
-	val, ok := c.GeneralConfig.GlobalEvmGasBumpTxDepth()
+	val, ok := c.GeneralConfig.GlobalEvmGasBumpTxDepth(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmGasBumpTxDepth", val)
 		return val
@@ -790,7 +804,7 @@ func (c *chainScopedConfig) EvmGasBumpTxDepth() uint16 {
 // EvmDefaultBatchSize controls the number of receipts fetched in each
 // request in the EthConfirmer
 func (c *chainScopedConfig) EvmDefaultBatchSize() uint32 {
-	val, ok := c.GeneralConfig.GlobalEvmDefaultBatchSize()
+	val, ok := c.GeneralConfig.GlobalEvmDefaultBatchSize(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmDefaultBatchSize", val)
 		return val
@@ -801,7 +815,7 @@ func (c *chainScopedConfig) EvmDefaultBatchSize() uint32 {
 // EvmGasBumpPercent is the minimum percentage by which gas is bumped on each transaction attempt
 // Change with care since values below geth's default will fail with "underpriced replacement transaction"
 func (c *chainScopedConfig) EvmGasBumpPercent() uint16 {
-	val, ok := c.GeneralConfig.GlobalEvmGasBumpPercent()
+	val, ok := c.GeneralConfig.GlobalEvmGasBumpPercent(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmGasBumpPercent", val)
 		return val
@@ -818,7 +832,7 @@ func (c *chainScopedConfig) EvmGasBumpPercent() uint16 {
 
 // EvmNonceAutoSync enables/disables running the NonceSyncer on application start
 func (c *chainScopedConfig) EvmNonceAutoSync() bool {
-	val, ok := c.GeneralConfig.GlobalEvmNonceAutoSync()
+	val, ok := c.GeneralConfig.GlobalEvmNonceAutoSync(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmNonceAutoSync", val)
 		return val
@@ -840,7 +854,7 @@ func (c *chainScopedConfig) EvmNonceAutoSync() bool {
 // This factor is always applied, so includes Optimism L2 transactions which
 // uses a default gas limit of 1 and is also applied to EvmGasLimitDefault.
 func (c *chainScopedConfig) EvmGasLimitMultiplier() float32 {
-	val, ok := c.GeneralConfig.GlobalEvmGasLimitMultiplier()
+	val, ok := c.GeneralConfig.GlobalEvmGasLimitMultiplier(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmGasLimitMultiplier", val)
 		return val
@@ -860,7 +874,7 @@ func (c *chainScopedConfig) EvmGasLimitMultiplier() float32 {
 // dropped. You may think of it as something like the maximum permittable "lag"
 // for the head tracker before we start dropping heads to keep up.
 func (c *chainScopedConfig) EvmHeadTrackerMaxBufferSize() uint32 {
-	val, ok := c.GeneralConfig.GlobalEvmHeadTrackerMaxBufferSize()
+	val, ok := c.GeneralConfig.GlobalEvmHeadTrackerMaxBufferSize(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmHeadTrackerMaxBufferSize", val)
 		return val
@@ -877,7 +891,7 @@ func (c *chainScopedConfig) EvmHeadTrackerMaxBufferSize() uint32 {
 
 // EthTxReaperInterval controls how often the eth tx reaper should run
 func (c *chainScopedConfig) EthTxReaperInterval() time.Duration {
-	val, ok := c.GeneralConfig.GlobalEthTxReaperInterval()
+	val, ok := c.GeneralConfig.GlobalEthTxReaperInterval(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EthTxReaperInterval", val)
 		return val
@@ -895,7 +909,7 @@ func (c *chainScopedConfig) EthTxReaperInterval() time.Duration {
 // Current head is 142, any eth_tx confirmed in block 91 or below will be reaped as long as its created_at was more than EthTxReaperThreshold ago
 // Set to 0 to disable eth_tx reaping
 func (c *chainScopedConfig) EthTxReaperThreshold() time.Duration {
-	val, ok := c.GeneralConfig.GlobalEthTxReaperThreshold()
+	val, ok := c.GeneralConfig.GlobalEthTxReaperThreshold(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EthTxReaperThreshold", val)
 		return val
@@ -912,7 +926,7 @@ func (c *chainScopedConfig) EthTxReaperThreshold() time.Duration {
 
 // EvmLogBackfillBatchSize sets the batch size for calling FilterLogs when we backfill missing logs
 func (c *chainScopedConfig) EvmLogBackfillBatchSize() uint32 {
-	val, ok := c.GeneralConfig.GlobalEvmLogBackfillBatchSize()
+	val, ok := c.GeneralConfig.GlobalEvmLogBackfillBatchSize(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmLogBackfillBatchSize", val)
 		return val
@@ -930,7 +944,7 @@ func (c *chainScopedConfig) EvmLogBackfillBatchSize() uint32 {
 // EvmRPCDefaultBatchSize controls the number of receipts fetched in each
 // request in the EthConfirmer
 func (c *chainScopedConfig) EvmRPCDefaultBatchSize() uint32 {
-	val, ok := c.GeneralConfig.GlobalEvmRPCDefaultBatchSize()
+	val, ok := c.GeneralConfig.GlobalEvmRPCDefaultBatchSize(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmRPCDefaultBatchSize", val)
 		return val
@@ -964,7 +978,7 @@ func (c *chainScopedConfig) FlagsContractAddress() string {
 
 // BalanceMonitorEnabled enables the balance monitor
 func (c *chainScopedConfig) BalanceMonitorEnabled() bool {
-	val, ok := c.GeneralConfig.GlobalBalanceMonitorEnabled()
+	val, ok := c.GeneralConfig.GlobalBalanceMonitorEnabled(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("BalanceMonitorEnabled", val)
 		return val
@@ -975,7 +989,7 @@ func (c *chainScopedConfig) BalanceMonitorEnabled() bool {
 // EvmEIP1559DynamicFees will send transactions with the 0x2 dynamic fee EIP-2718
 // type and gas fields when enabled
 func (c *chainScopedConfig) EvmEIP1559DynamicFees() bool {
-	val, ok := c.GeneralConfig.GlobalEvmEIP1559DynamicFees()
+	val, ok := c.GeneralConfig.GlobalEvmEIP1559DynamicFees(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmEIP1559DynamicFees", val)
 		return val
@@ -1000,7 +1014,7 @@ func (c *chainScopedConfig) EvmGasFeeCap() *big.Int {
 // EvmGasTipCapDefault is the default value to use for the gas tip on DynamicFee transactions
 // This is analogous to EthGasPriceDefault except the base fee is excluded
 func (c *chainScopedConfig) EvmGasTipCapDefault() *big.Int {
-	val, ok := c.GeneralConfig.GlobalEvmGasTipCapDefault()
+	val, ok := c.GeneralConfig.GlobalEvmGasTipCapDefault(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmGasTipCapDefault", val)
 		return val
@@ -1018,7 +1032,7 @@ func (c *chainScopedConfig) EvmGasTipCapDefault() *big.Int {
 // EvmGasTipCapMinimum is the minimum allowed value to use for the gas tip on DynamicFee transactions
 // This is analogous to EthMinGasPriceWei except the base fee is excluded
 func (c *chainScopedConfig) EvmGasTipCapMinimum() *big.Int {
-	val, ok := c.GeneralConfig.GlobalEvmGasTipCapMinimum()
+	val, ok := c.GeneralConfig.GlobalEvmGasTipCapMinimum(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("EvmGasTipCapMinimum", val)
 		return val
@@ -1033,19 +1047,15 @@ func (c *chainScopedConfig) EvmGasTipCapMinimum() *big.Int {
 	return &c.defaultSet.gasTipCapMinimum
 }
 
-func lookupEnv(k string, parse func(string) (interface{}, error)) (interface{}, bool) {
+func lookupEnv(k string, parse func(string) (interface{}, error)) (val interface{}, invalid error, set bool) {
 	s, ok := os.LookupEnv(k)
 	if ok {
 		val, err := parse(s)
 		if err != nil {
-			logger.Errorw(
-				fmt.Sprintf("Invalid value provided for %s, falling back to default.", s),
-				"value", s,
-				"key", k,
-				"error", err)
-			return nil, false
+			warn := errors.Wrapf(err, "Invalid value %q provided for %s, falling back to default.", s, k)
+			return nil, warn, false
 		}
-		return val, true
+		return val, nil, true
 	}
-	return nil, false
+	return nil, nil, false
 }

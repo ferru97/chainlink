@@ -66,8 +66,12 @@ func newChain(dbchain types.Chain, opts ChainSetOpts) (*chain, error) {
 	if !dbchain.Enabled {
 		return nil, errors.Errorf("cannot create new chain with ID %s, the chain is disabled", dbchain.ID.String())
 	}
-	if err := cfg.Validate(); err != nil {
+	if warns, err := cfg.Validate(); err != nil {
 		return nil, errors.Wrapf(err, "cannot create new chain with ID %s, config validation failed", dbchain.ID.String())
+	} else if len(warns) > 0 {
+		for _, warn := range warns {
+			l.Warn(warn)
+		}
 	}
 	headTrackerLL := opts.Config.LogLevel().String()
 	db := opts.DB

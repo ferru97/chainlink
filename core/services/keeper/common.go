@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/smartcontractkit/chainlink/core/internal/gethwrappers/generated/keeper_registry_wrapper"
+	"github.com/smartcontractkit/chainlink/core/logger"
 	"github.com/smartcontractkit/chainlink/core/services/eth"
 )
 
@@ -15,9 +16,9 @@ type Config interface {
 	KeeperGasPriceBufferPercent() uint32
 	KeeperGasTipCapBufferPercent() uint32
 	KeeperMaximumGracePeriod() int64
-	KeeperRegistryCheckGasOverhead() uint64
-	KeeperRegistryPerformGasOverhead() uint64
-	KeeperRegistrySyncInterval() time.Duration
-	KeeperRegistrySyncUpkeepQueueSize() uint32
+	KeeperRegistryCheckGasOverhead(logger.L) uint64
+	KeeperRegistryPerformGasOverhead(logger.L) uint64
+	KeeperRegistrySyncInterval(logger.L) time.Duration
+	KeeperRegistrySyncUpkeepQueueSize(logger.L) uint32
 	LogSQL() bool
 }

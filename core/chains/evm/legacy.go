@@ -14,14 +14,19 @@ import (
 )
 
 type LegacyEthNodeConfig interface {
-	DefaultChainID() *big.Int
+	DefaultChainID() (*big.Int, error)
 	EthereumURL() string
-	EthereumHTTPURL() *url.URL
-	EthereumSecondaryURLs() []url.URL
+	EthereumHTTPURL() (*url.URL, error)
+	EthereumSecondaryURLs() ([]url.URL, error)
 }
 
 func ClobberDBFromEnv(db *sqlx.DB, config LegacyEthNodeConfig, lggr logger.Logger) error {
-	ethChainID := utils.NewBig(config.DefaultChainID())
+	var ethChainID *utils.Big
+	if defaultChainID, err := config.DefaultChainID(); err != nil {
+		return err
+	} else {
+		ethChainID = utils.NewBig(defaultChainID)
+	}
 	if ethChainID == nil {
 		return errors.New("ETH_CHAIN_ID must be specified (or set USE_LEGACY_ETH_ENV_VARS=false)")
 	}
@@ -43,14 +48,20 @@ func ClobberDBFromEnv(db *sqlx.DB, config LegacyEthNodeConfig, lggr logger.Logge
 		return errors.New("ETH_URL must be specified (or set USE_LEGACY_ETH_ENV_VARS=false)")
 	}
 	var primaryHTTP null.String
-	if config.EthereumHTTPURL() != nil {
-		primaryHTTP = null.StringFrom(config.EthereumHTTPURL().String())
+	if pURL, err := config.EthereumHTTPURL(); err != nil {
+		return err
+	} else if pURL != nil {
+		primaryHTTP = null.StringFrom(pURL.String())
 	}
 	if _, err := db.Exec(stmt, fmt.Sprintf("primary-0-%s", ethChainID), ethChainID, primaryWS, primaryHTTP, false); err != nil {
 		return errors.Wrap(err, "failed to upsert primary-0")
 	}
 
-	for i, url := range config.EthereumSecondaryURLs() {
+	eth2ndURLs, err := config.EthereumSecondaryURLs()
+	if err != nil {
+		return err
+	}
+	for i, url := range eth2ndURLs {
 		name := fmt.Sprintf("sendonly-%d-%s", i, ethChainID)
 		if _, err := db.Exec(stmt, name, ethChainID, nil, url.String(), true); err != nil {
 			return errors.Wrapf(err, "failed to upsert %s", name)

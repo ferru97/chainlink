@@ -186,7 +186,7 @@ func (eb *EthBroadcaster) monitorEthTxs(k ethkey.State, triggerCh chan struct{})
 
 	defer eb.wg.Done()
 	for {
-		pollDBTimer := time.NewTimer(utils.WithJitter(eb.config.TriggerFallbackDBPollInterval()))
+		pollDBTimer := time.NewTimer(utils.WithJitter(eb.config.TriggerFallbackDBPollInterval(eb.logger)))
 
 		if err := eb.ProcessUnstartedEthTxs(ctx, k); err != nil {
 			eb.logger.Errorw("Error in ProcessUnstartedEthTxs", "error", err)

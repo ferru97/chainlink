@@ -3,6 +3,8 @@ package fluxmonitorv2
 import (
 	"time"
 
+	"github.com/smartcontractkit/chainlink/core/logger"
+
 	uuid "github.com/satori/go.uuid"
 
 	"github.com/pelletier/go-toml"
@@ -13,7 +15,7 @@ import (
 )
 
 type ValidationConfig interface {
-	DefaultHTTPTimeout() models.Duration
+	DefaultHTTPTimeout(logger.L) models.Duration
 }
 
 func ValidatedFluxMonitorSpec(config ValidationConfig, ts string) (job.Job, error) {
@@ -64,7 +66,7 @@ func ValidatedFluxMonitorSpec(config ValidationConfig, ts string) (job.Job, erro
 		return jb, err
 	}
 	timeouts := []time.Duration{
-		config.DefaultHTTPTimeout().Duration(),
+		config.DefaultHTTPTimeout(nil).Duration(),
 		time.Duration(jb.MaxTaskDuration),
 	}
 	if aTimeoutSet {

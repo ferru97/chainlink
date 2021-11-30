@@ -51,27 +51,33 @@ type (
 	}
 
 	Config interface {
-		DatabaseBackupMode() config.DatabaseBackupMode
-		DatabaseBackupFrequency() time.Duration
-		DatabaseBackupURL() *url.URL
+		DatabaseBackupMode(logger.Logger) config.DatabaseBackupMode
+		DatabaseBackupFrequency(logger.Logger) time.Duration
+		DatabaseBackupURL() (*url.URL, error)
 		DatabaseBackupDir() string
-		DatabaseURL() url.URL
-		RootDir() string
+		DatabaseURL() (url.URL, error)
+		RootDir(logger.Logger) string
 	}
 )
 
-func NewDatabaseBackup(config Config, logger logger.Logger) DatabaseBackup {
-	dbUrl := config.DatabaseURL()
-	dbBackupUrl := config.DatabaseBackupURL()
+func NewDatabaseBackup(config Config, logger logger.Logger) (DatabaseBackup, error) {
+	dbUrl, err := config.DatabaseURL()
+	if err != nil {
+		return nil, err
+	}
+	dbBackupUrl, err := config.DatabaseBackupURL()
+	if err != nil {
+		return nil, err
+	}
 	if dbBackupUrl != nil {
 		dbUrl = *dbBackupUrl
 	}
 
-	outputParentDir := filepath.Join(config.RootDir(), "backup")
+	outputParentDir := filepath.Join(config.RootDir(logger), "backup")
 	if config.DatabaseBackupDir() != "" {
 		dir, err := filepath.Abs(config.DatabaseBackupDir())
 		if err != nil {
-			logger.Errorf("Invalid path for DATABASE_BACKUP_DIR (%s) - please set it to a valid directory path", config.DatabaseBackupDir())
+			return nil, fmt.Errorf("invalid path for DATABASE_BACKUP_DIR (%s) - please set it to a valid directory path", config.DatabaseBackupDir())
 		}
 		outputParentDir = dir
 	}
@@ -79,12 +85,12 @@ func NewDatabaseBackup(config Config, logger logger.Logger) DatabaseBackup {
 	return &databaseBackup{
 		logger,
 		dbUrl,
-		config.DatabaseBackupMode(),
-		config.DatabaseBackupFrequency(),
+		config.DatabaseBackupMode(logger),
+		config.DatabaseBackupFrequency(logger),
 		outputParentDir,
 		make(chan bool),
 		utils.StartStopOnce{},
-	}
+	}, nil
 }
 
 func (backup *databaseBackup) Start() error {

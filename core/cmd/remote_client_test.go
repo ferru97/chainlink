@@ -395,14 +395,18 @@ func TestClient_GetConfiguration(t *testing.T) {
 	assert.NoError(t, client.GetConfiguration(cltest.EmptyCLIContext()))
 	require.Equal(t, 1, len(r.Renders))
 
+	chainID, err := cfg.DefaultChainID()
+	require.NoError(t, err)
+	require.NotNil(t, chainID)
+
 	cp := *r.Renders[0].(*config.ConfigPrinter)
-	assert.Equal(t, cp.EnvPrinter.BridgeResponseURL, cfg.BridgeResponseURL().String())
-	assert.Equal(t, cp.EnvPrinter.DefaultChainID, cfg.DefaultChainID().String())
+	assert.Equal(t, cp.EnvPrinter.BridgeResponseURL, cfg.BridgeResponseURL(nil).String())
+	assert.Equal(t, cp.EnvPrinter.DefaultChainID, chainID.String())
 	assert.Equal(t, cp.EnvPrinter.Dev, cfg.Dev())
 	assert.Equal(t, cp.EnvPrinter.LogLevel, config.LogLevel{Level: cfg.LogLevel()})
 	assert.Equal(t, cp.EnvPrinter.LogSQL, cfg.LogSQL())
-	assert.Equal(t, cp.EnvPrinter.RootDir, cfg.RootDir())
-	assert.Equal(t, cp.EnvPrinter.SessionTimeout, cfg.SessionTimeout())
+	assert.Equal(t, cp.EnvPrinter.RootDir, cfg.RootDir(nil))
+	assert.Equal(t, cp.EnvPrinter.SessionTimeout, cfg.SessionTimeout(nil))
 }
 
 func TestClient_RunOCRJob_HappyPath(t *testing.T) {

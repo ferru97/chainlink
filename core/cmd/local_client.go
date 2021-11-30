@@ -45,13 +45,17 @@ const ownerPermsMask = os.FileMode(0700)
 
 // RunNode starts the Chainlink core.
 func (cli *Client) RunNode(c *clipkg.Context) error {
-	err := cli.Config.Validate()
+	warns, err := cli.Config.Validate()
 	if err != nil {
 		return cli.errorOut(err)
 	}
 
 	lggr := cli.Logger.Named("boot")
 	lggr.Infow(fmt.Sprintf("Starting Chainlink Node %s at commit %s", static.Version, static.Sha), "Version", static.Version, "SHA", static.Sha)
+
+	for _, warn := range warns {
+		lggr.Warn(warn)
+	}
 
 	if cli.Config.Dev() {
 		lggr.Warn("Chainlink is running in DEVELOPMENT mode. This is a security risk if enabled in production.")
@@ -121,7 +125,7 @@ func (cli *Client) RunNode(c *clipkg.Context) error {
 		lggr.Infof("Created P2P key with ID %s", p2pKey.ID())
 	}
 
-	if e := checkFilePermissions(lggr, cli.Config.RootDir()); e != nil {
+	if e := checkFilePermissions(lggr, cli.Config.RootDir(lggr)); e != nil {
 		lggr.Warn(e)
 	}
 
@@ -358,9 +362,11 @@ func (cli *Client) Status(c *clipkg.Context) error {
 // This is useful to setup the database for testing
 func (cli *Client) ResetDatabase(c *clipkg.Context) error {
 	cfg := cli.Config
-	parsed := cfg.DatabaseURL()
-	if parsed.String() == "" {
-		return cli.errorOut(errors.New("You must set DATABASE_URL env variable. HINT: If you are running this to set up your local test database, try DATABASE_URL=postgresql://postgres@localhost:5432/chainlink_test?sslmode=disable"))
+	var parsed url.URL
+	if p, err := cfg.DatabaseURL(); err != nil {
+		return err
+	} else {
+		parsed = p
 	}
 
 	dangerMode := c.Bool("dangerWillRobinson")
@@ -427,9 +433,9 @@ func (cli *Client) PrepareTestDatabaseUserOnly(c *clipkg.Context) error {
 // MigrateDatabase migrates the database
 func (cli *Client) MigrateDatabase(c *clipkg.Context) error {
 	cfg := cli.Config
-	parsed := cfg.DatabaseURL()
-	if parsed.String() == "" {
-		return cli.errorOut(errors.New("You must set DATABASE_URL env variable. HINT: If you are running this to set up your local test database, try DATABASE_URL=postgresql://postgres@localhost:5432/chainlink_test?sslmode=disable"))
+	parsed, err := cfg.DatabaseURL()
+	if err != nil {
+		return err
 	}
 
 	cli.Logger.Infof("Migrating database: %#v", parsed.String())
@@ -514,14 +520,14 @@ func (cli *Client) CreateMigration(c *clipkg.Context) error {
 }
 
 func newConnection(cfg config.GeneralConfig, lggr logger.Logger) (*sqlx.DB, error) {
-	parsed := cfg.DatabaseURL()
-	if parsed.String() == "" {
-		return nil, errors.New("You must set DATABASE_URL env variable. HINT: If you are running this to set up your local test database, try DATABASE_URL=postgresql://postgres@localhost:5432/chainlink_test?sslmode=disable")
+	parsed, err := cfg.DatabaseURL()
+	if err != nil {
+		return nil, err
 	}
 	config := pg.Config{
 		Logger:       lggr,
-		MaxOpenConns: cfg.ORMMaxOpenConns(),
-		MaxIdleConns: cfg.ORMMaxIdleConns(),
+		MaxOpenConns: cfg.ORMMaxOpenConns(lggr),
+		MaxIdleConns: cfg.ORMMaxIdleConns(lggr),
 	}
 	db, err := pg.NewConnection(parsed.String(), string(cfg.GetDatabaseDialectConfiguredOrDefault()), config)
 	return db, err
@@ -579,7 +585,10 @@ func downAndUpDB(cfg config.GeneralConfig, lggr logger.Logger, baseVersionID int
 }
 
 func dumpSchema(cfg config.GeneralConfig) (string, error) {
-	dbURL := cfg.DatabaseURL()
+	dbURL, err := cfg.DatabaseURL()
+	if err != nil {
+		return "", err
+	}
 	args := []string{
 		dbURL.String(),
 		"--schema-only",
@@ -609,7 +618,10 @@ func checkSchema(cfg config.GeneralConfig, prevSchema string) error {
 }
 
 func insertFixtures(config config.GeneralConfig, pathToFixtures string) (err error) {
-	dbURL := config.DatabaseURL()
+	dbURL, err := config.DatabaseURL()
+	if err != nil {
+		return err
+	}
 	db, err := sql.Open(string(dialects.Postgres), dbURL.String())
 	if err != nil {
 		return fmt.Errorf("unable to open postgres database for creating test db: %+v", err)

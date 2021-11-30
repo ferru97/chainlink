@@ -10,23 +10,23 @@ import (
 )
 
 type P2PNetworking interface {
-	P2PNetworkingStack() (n ocrnetworking.NetworkingStack)
+	P2PNetworkingStack() (ocrnetworking.NetworkingStack, error)
 	P2PNetworkingStackRaw() string
-	P2PPeerID() p2pkey.PeerID
+	P2PPeerID() (p2pkey.PeerID, error)
 	P2PPeerIDRaw() string
-	P2PIncomingMessageBufferSize() int
-	P2POutgoingMessageBufferSize() int
+	P2PIncomingMessageBufferSize(logger.L) int
+	P2POutgoingMessageBufferSize(logger.L) int
 	P2PDeprecated
 }
 
 // P2PNetworkingStack returns the preferred networking stack for libocr
-func (c *generalConfig) P2PNetworkingStack() (n ocrnetworking.NetworkingStack) {
+func (c *generalConfig) P2PNetworkingStack() (n ocrnetworking.NetworkingStack, err error) {
 	str := c.P2PNetworkingStackRaw()
-	err := n.UnmarshalText([]byte(str))
+	err = n.UnmarshalText([]byte(str))
 	if err != nil {
-		logger.Fatalf("P2PNetworkingStack failed to unmarshal '%s': %s", str, err)
+		err = errors.Wrapf(err, "P2PNetworkingStack failed to unmarshal '%s'", str)
 	}
-	return n
+	return
 }
 
 // P2PNetworkingStackRaw returns the raw string passed as networking stack
@@ -35,17 +35,16 @@ func (c *generalConfig) P2PNetworkingStackRaw() string {
 }
 
 // P2PPeerID is the default peer ID that will be used, if not overridden
-func (c *generalConfig) P2PPeerID() p2pkey.PeerID {
+func (c *generalConfig) P2PPeerID() (p2pkey.PeerID, error) {
 	pidStr := c.viper.GetString(EnvVarName("P2PPeerID"))
 	if pidStr == "" {
-		return ""
+		return "", nil
 	}
 	var pid p2pkey.PeerID
 	if err := pid.UnmarshalText([]byte(pidStr)); err != nil {
-		logger.Error(errors.Wrapf(ErrInvalid, "P2P_PEER_ID is invalid %v", err))
-		return ""
+		return "", errors.Wrapf(ErrInvalid, "P2P_PEER_ID is invalid %v", err)
 	}
-	return pid
+	return pid, nil
 }
 
 // P2PPeerIDRaw returns the string value of whatever P2P_PEER_ID was set to with no parsing
@@ -53,18 +52,18 @@ func (c *generalConfig) P2PPeerIDRaw() string {
 	return c.viper.GetString(EnvVarName("P2PPeerID"))
 }
 
-func (c *generalConfig) P2PIncomingMessageBufferSize() int {
+func (c *generalConfig) P2PIncomingMessageBufferSize(lggr logger.L) int {
 	if c.OCRIncomingMessageBufferSize() != 0 {
 		return c.OCRIncomingMessageBufferSize()
 	}
-	return int(c.getWithFallback("P2PIncomingMessageBufferSize", ParseUint16).(uint16))
+	return int(c.getWithFallback("P2PIncomingMessageBufferSize", ParseUint16, lggr).(uint16))
 }
 
-func (c *generalConfig) P2POutgoingMessageBufferSize() int {
+func (c *generalConfig) P2POutgoingMessageBufferSize(lggr logger.L) int {
 	if c.OCROutgoingMessageBufferSize() != 0 {
 		return c.OCRIncomingMessageBufferSize()
 	}
-	return int(c.getWithFallback("P2PIncomingMessageBufferSize", ParseUint16).(uint16))
+	return int(c.getWithFallback("P2PIncomingMessageBufferSize", ParseUint16, lggr).(uint16))
 }
 
 type P2PDeprecated interface {

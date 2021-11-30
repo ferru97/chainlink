@@ -5,6 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/smartcontractkit/chainlink/core/logger"
+
 	"github.com/smartcontractkit/chainlink/core/assets"
 	"github.com/smartcontractkit/chainlink/core/services/job"
 	"github.com/smartcontractkit/chainlink/core/store/models"
@@ -14,7 +16,9 @@ import (
 
 type testcfg struct{}
 
-func (testcfg) DefaultHTTPTimeout() models.Duration { return models.MustMakeDuration(2 * time.Second) }
+func (testcfg) DefaultHTTPTimeout(logger.Logger) models.Duration {
+	return models.MustMakeDuration(2 * time.Second)
+}
 
 func TestValidate(t *testing.T) {
 	var tt = []struct {

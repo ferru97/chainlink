@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"github.com/pkg/errors"
@@ -27,14 +28,20 @@ func Run(client *cmd.Client, args ...string) {
 // NewProductionClient configures an instance of the CLI to be used
 // in production.
 func NewProductionClient() *cmd.Client {
-	cfg := config.NewGeneralConfig()
+	cfg, warns, err := config.NewGeneralConfig()
+	if err != nil {
+		log.Fatalln("Fatal configuration error:", err)
+	}
 	lggr := logger.NewLogger(cfg)
+	for _, warn := range warns {
+		lggr.Warn(warn)
+	}
 
 	prompter := cmd.NewTerminalPrompter()
 	cookieAuth := cmd.NewSessionCookieAuthenticator(cfg, cmd.DiskCookieStore{Config: cfg}, lggr)
 	sr := sessions.SessionRequest{}
 	sessionRequestBuilder := cmd.NewFileSessionRequestBuilder(lggr)
-	if credentialsFile := cfg.AdminCredentialsFile(); credentialsFile != "" {
+	if credentialsFile := cfg.AdminCredentialsFile(lggr); credentialsFile != "" {
 		var err error
 		sr, err = sessionRequestBuilder.Build(credentialsFile)
 		if err != nil && errors.Cause(err) != cmd.ErrNoCredentialFile && !os.IsNotExist(err) {

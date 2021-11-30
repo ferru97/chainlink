@@ -163,7 +163,7 @@ TELEMETRY_INGRESS_SERVER_PUB_KEY:
 TELEMETRY_INGRESS_URL: 
 CHAINLINK_TLS_HOST: 
 CHAINLINK_TLS_PORT: 6689
-CHAINLINK_TLS_REDIRECT: false`, cfg.RootDir())
+CHAINLINK_TLS_REDIRECT: false`, cfg.RootDir(nil))
 
 	if !strings.Contains(msg, expected) {
 		t.Errorf("Expected to find:\n\n%s\n\nWithin:\n\n%s\n\nDiff:\n\n%s", expected, msg, diff.Diff(expected, msg))
@@ -361,11 +361,11 @@ func TestClient_LogToDiskOptionDisablesAsExpected(t *testing.T) {
 			config := cltest.NewTestGeneralConfig(t)
 			config.Overrides.Dev = null.BoolFrom(true)
 			config.Overrides.LogToDisk = null.BoolFrom(tt.logToDiskValue)
-			require.NoError(t, os.MkdirAll(config.RootDir(), os.FileMode(0700)))
-			defer os.RemoveAll(config.RootDir())
+			require.NoError(t, os.MkdirAll(config.RootDir(nil), os.FileMode(0700)))
+			defer os.RemoveAll(config.RootDir(nil))
 
 			logger.NewLogger(config).Sync()
-			filepath := filepath.Join(config.RootDir(), "log.jsonl")
+			filepath := filepath.Join(config.RootDir(nil), "log.jsonl")
 			_, err := os.Stat(filepath)
 			assert.Equal(t, os.IsNotExist(err), !tt.fileShouldExist)
 		})
@@ -415,7 +415,7 @@ func TestClient_RebroadcastTransactions_BPTXM(t *testing.T) {
 		Runner:                 cltest.EmptyRunner{},
 	}
 
-	config.SetDialect(dialects.TransactionWrappedPostgres)
+	config.Overrides.Dialect = dialects.TransactionWrappedPostgres
 
 	for i := beginningNonce; i <= endingNonce; i++ {
 		n := i
@@ -450,7 +450,7 @@ func TestClient_RebroadcastTransactions_OutsideRange_BPTXM(t *testing.T) {
 			// test multiple connections to the database, and changes made within
 			// the transaction cannot be seen from another connection.
 			config, sqlxDB := heavyweight.FullTestDB(t, "rebroadcasttransactions_outsiderange", true, true)
-			config.SetDialect(dialects.Postgres)
+			config.Overrides.Dialect = dialects.Postgres
 
 			keyStore := cltest.NewKeyStore(t, sqlxDB, config)
 
@@ -487,7 +487,7 @@ func TestClient_RebroadcastTransactions_OutsideRange_BPTXM(t *testing.T) {
 				Runner:                 cltest.EmptyRunner{},
 			}
 
-			config.SetDialect(dialects.TransactionWrappedPostgres)
+			config.Overrides.Dialect = dialects.TransactionWrappedPostgres
 
 			for i := beginningNonce; i <= endingNonce; i++ {
 				n := i

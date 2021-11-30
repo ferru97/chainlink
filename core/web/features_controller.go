@@ -20,9 +20,11 @@ const (
 // Example:
 // "GET <application>/features"
 func (fc *FeaturesController) Index(c *gin.Context) {
+	cfg := fc.App.GetConfig()
+	lggr := fc.App.GetLogger()
 	resources := []presenters.FeatureResource{
-		*presenters.NewFeatureResource(FeatureKeyCSA, fc.App.GetConfig().FeatureUICSAKeys()),
-		*presenters.NewFeatureResource(FeatureKeyFeedsManager, fc.App.GetConfig().FeatureUIFeedsManager()),
+		*presenters.NewFeatureResource(FeatureKeyCSA, cfg.FeatureUICSAKeys(lggr)),
+		*presenters.NewFeatureResource(FeatureKeyFeedsManager, cfg.FeatureUIFeedsManager(lggr)),
 	}
 
 	jsonAPIResponse(c, resources, "features")

@@ -33,7 +33,7 @@ type (
 		Type() TaskType
 		ID() int
 		DotID() string
-		Run(ctx context.Context, lggr logger.Logger, vars Vars, inputs []Result) (Result, RunInfo)
+		Run(ctx context.Context, lggr logger.L, vars Vars, inputs []Result) (Result, RunInfo)
 		Base() *BaseTask
 		Outputs() []Task
 		Inputs() []Task
@@ -45,16 +45,16 @@ type (
 	}
 
 	Config interface {
-		BridgeResponseURL() *url.URL
-		DatabaseURL() url.URL
+		BridgeResponseURL(logger.L) *url.URL
+		DatabaseURL() (url.URL, error)
 		DefaultHTTPLimit() int64
-		DefaultHTTPTimeout() models.Duration
-		DefaultMaxHTTPAttempts() uint
+		DefaultHTTPTimeout(logger.L) models.Duration
+		DefaultMaxHTTPAttempts(logger.L) uint
 		DefaultHTTPAllowUnrestrictedNetworkAccess() bool
-		TriggerFallbackDBPollInterval() time.Duration
-		JobPipelineMaxRunDuration() time.Duration
-		JobPipelineReaperInterval() time.Duration
-		JobPipelineReaperThreshold() time.Duration
+		TriggerFallbackDBPollInterval(logger.L) time.Duration
+		JobPipelineMaxRunDuration(logger.L) time.Duration
+		JobPipelineReaperInterval(logger.L) time.Duration
+		JobPipelineReaperThreshold(logger.L) time.Duration
 	}
 )
 
@@ -185,7 +185,7 @@ type TaskRunResults []TaskRunResult
 
 // FinalResult pulls the FinalResult for the pipeline_run from the task runs
 // It needs to respect the output index of each task
-func (trrs TaskRunResults) FinalResult(l logger.Logger) FinalResult {
+func (trrs TaskRunResults) FinalResult(l logger.L) FinalResult {
 	var found bool
 	var fr FinalResult
 	sort.Slice(trrs, func(i, j int) bool {

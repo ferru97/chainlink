@@ -165,7 +165,7 @@ func TestBridgeTask_AsyncJobPendingState(t *testing.T) {
 
 		err = json.Unmarshal(payload, &reqBody)
 		require.NoError(t, err)
-		require.Equal(t, fmt.Sprintf("%s/v2/resume/%v", cfg.BridgeResponseURL(), id.String()), reqBody.ResponseURL)
+		require.Equal(t, fmt.Sprintf("%s/v2/resume/%v", cfg.BridgeResponseURL(nil), id.String()), reqBody.ResponseURL)
 		w.Header().Set("Content-Type", "application/json")
 
 		// w.Header().Set("X-Chainlink-Pending", "true")

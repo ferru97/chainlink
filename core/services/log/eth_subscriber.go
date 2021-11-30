@@ -73,7 +73,7 @@ func (sub *ethSubscriber) backfillLogs(fromBlockOverride null.Int64, addresses [
 
 		// Backfill from `backfillDepth` blocks ago.  It's up to the subscribers to
 		// filter out logs they've already dealt with.
-		fromBlock := uint64(latestHeight) - sub.config.BlockBackfillDepth()
+		fromBlock := uint64(latestHeight) - sub.config.BlockBackfillDepth(sub.logger)
 		if fromBlock > uint64(latestHeight) {
 			fromBlock = 0 // Overflow protection
 		}

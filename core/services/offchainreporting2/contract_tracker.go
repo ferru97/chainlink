@@ -39,8 +39,7 @@ var (
 	_ ocrtypes.ContractConfigTracker = &OCRContractTracker{}
 	_ httypes.HeadTrackable          = &OCRContractTracker{}
 
-	OCRContractConfigSet            = getEventTopic("ConfigSet")
-	OCRContractLatestRoundRequested = getEventTopic("RoundRequested")
+	OCRContractConfigSet = getEventTopic("ConfigSet")
 )
 
 //go:generate mockery --name OCRContractTrackerDB --output ./mocks/ --case=underscore
@@ -290,7 +289,7 @@ func (t *OCRContractTracker) HandleLog(lb log.Broadcast) {
 				return t.logBroadcaster.MarkConsumed(lb, pg.WithQueryer(q))
 			})
 			if err != nil {
-				logger.Error(err)
+				t.logger.Error(err)
 				return
 			}
 			consumed = true

@@ -141,7 +141,7 @@ func (r *runner) runReaperLoop() {
 	defer r.wgDone.Done()
 	defer r.destroy()
 
-	runReaperTicker := time.NewTicker(r.config.JobPipelineReaperInterval())
+	runReaperTicker := time.NewTicker(r.config.JobPipelineReaperInterval(r.lggr))
 	defer runReaperTicker.Stop()
 	for {
 		select {
@@ -270,7 +270,7 @@ func (r *runner) run(
 	reportCtx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	if pipelineTimeout := r.config.JobPipelineMaxRunDuration(); pipelineTimeout != 0 {
+	if pipelineTimeout := r.config.JobPipelineMaxRunDuration(l); pipelineTimeout != 0 {
 		ctx, cancel = context.WithTimeout(ctx, pipelineTimeout)
 		defer cancel()
 	}
@@ -577,7 +577,7 @@ func (r *runner) runReaper() {
 	ctx, cancel := utils.CombinedContext(context.Background(), r.chStop)
 	defer cancel()
 
-	err := r.orm.DeleteRunsOlderThan(ctx, r.config.JobPipelineReaperThreshold())
+	err := r.orm.DeleteRunsOlderThan(ctx, r.config.JobPipelineReaperThreshold(r.lggr))
 	if ctx.Err() != nil {
 		return
 	} else if err != nil {

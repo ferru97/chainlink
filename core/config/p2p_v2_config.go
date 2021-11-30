@@ -3,6 +3,9 @@ package config
 import (
 	"time"
 
+	"github.com/pkg/errors"
+	"go.uber.org/multierr"
+
 	"github.com/smartcontractkit/chainlink/core/logger"
 	"github.com/smartcontractkit/chainlink/core/store/models"
 	ocrcommontypes "github.com/smartcontractkit/libocr/commontypes"
@@ -10,10 +13,10 @@ import (
 
 type P2PV2Networking interface {
 	P2PV2AnnounceAddresses() []string
-	P2PV2Bootstrappers() (locators []ocrcommontypes.BootstrapperLocator)
+	P2PV2Bootstrappers() (locators []ocrcommontypes.BootstrapperLocator, err error)
 	P2PV2BootstrappersRaw() []string
-	P2PV2DeltaDial() models.Duration
-	P2PV2DeltaReconcile() models.Duration
+	P2PV2DeltaDial(logger.L) models.Duration
+	P2PV2DeltaReconcile(logger.L) models.Duration
 	P2PV2ListenAddresses() []string
 }
 
@@ -39,13 +42,13 @@ func (c *generalConfig) P2PV2AnnounceAddressesRaw() []string {
 
 // P2PV2Bootstrappers returns the default bootstrapper peers for libocr's v2
 // networking stack
-func (c *generalConfig) P2PV2Bootstrappers() (locators []ocrcommontypes.BootstrapperLocator) {
+func (c *generalConfig) P2PV2Bootstrappers() (locators []ocrcommontypes.BootstrapperLocator, err error) {
 	bootstrappers := c.P2PV2BootstrappersRaw()
 	for _, s := range bootstrappers {
 		var locator ocrcommontypes.BootstrapperLocator
-		err := locator.UnmarshalText([]byte(s))
-		if err != nil {
-			logger.Fatalf("invalid format for bootstrapper '%s', got error: %s", s, err)
+		err2 := locator.UnmarshalText([]byte(s))
+		if err2 != nil {
+			err = multierr.Append(err, errors.Wrapf(err2, "invalid format for bootstrapper '%s'", s))
 		}
 		locators = append(locators, locator)
 	}
@@ -58,11 +61,11 @@ func (c *generalConfig) P2PV2BootstrappersRaw() []string {
 }
 
 // P2PV2DeltaDial controls how far apart Dial attempts are
-func (c *generalConfig) P2PV2DeltaDial() models.Duration {
-	return models.MustMakeDuration(c.getWithFallback("P2PV2DeltaDial", ParseDuration).(time.Duration))
+func (c *generalConfig) P2PV2DeltaDial(lggr logger.L) models.Duration {
+	return models.MustMakeDuration(c.getWithFallback("P2PV2DeltaDial", ParseDuration, lggr).(time.Duration))
 }
 
 // P2PV2DeltaReconcile controls how often a Reconcile message is sent to every peer.
-func (c *generalConfig) P2PV2DeltaReconcile() models.Duration {
-	return models.MustMakeDuration(c.getWithFallback("P2PV2DeltaReconcile", ParseDuration).(time.Duration))
+func (c *generalConfig) P2PV2DeltaReconcile(lggr logger.L) models.Duration {
+	return models.MustMakeDuration(c.getWithFallback("P2PV2DeltaReconcile", ParseDuration, lggr).(time.Duration))
 }

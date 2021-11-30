@@ -17,11 +17,11 @@ import (
 
 type sessionReaperConfig struct{}
 
-func (c sessionReaperConfig) SessionTimeout() models.Duration {
+func (c sessionReaperConfig) SessionTimeout(logger.Logger) models.Duration {
 	return models.MustMakeDuration(42 * time.Second)
 }
 
-func (c sessionReaperConfig) ReaperExpiration() models.Duration {
+func (c sessionReaperConfig) ReaperExpiration(logger.Logger) models.Duration {
 	return models.MustMakeDuration(142 * time.Second)
 }
 
@@ -31,7 +31,7 @@ func TestSessionReaper_ReapSessions(t *testing.T) {
 	db := pgtest.NewSqlxDB(t)
 	config := sessionReaperConfig{}
 	lggr := logger.TestLogger(t)
-	orm := sessions.NewORM(db, config.SessionTimeout().Duration(), lggr)
+	orm := sessions.NewORM(db, config.SessionTimeout(nil).Duration(), lggr)
 
 	r := sessions.NewSessionReaper(db.DB, config, lggr)
 	defer r.Stop()
@@ -42,10 +42,10 @@ func TestSessionReaper_ReapSessions(t *testing.T) {
 		wantReap bool
 	}{
 		{"current", time.Now(), false},
-		{"expired", time.Now().Add(-config.SessionTimeout().Duration()), false},
-		{"almost stale", time.Now().Add(-config.ReaperExpiration().Duration()), false},
-		{"stale", time.Now().Add(-config.ReaperExpiration().Duration()).
-			Add(-config.SessionTimeout().Duration()), true},
+		{"expired", time.Now().Add(-config.SessionTimeout(nil).Duration()), false},
+		{"almost stale", time.Now().Add(-config.ReaperExpiration(nil).Duration()), false},
+		{"stale", time.Now().Add(-config.ReaperExpiration(nil).Duration()).
+			Add(-config.SessionTimeout(nil).Duration()), true},
 	}
 
 	for _, test := range tests {

@@ -14,7 +14,19 @@ var envLvl = zapcore.InfoLevel
 
 func init() {
 	_ = envLvl.Set(os.Getenv("LOG_LEVEL"))
+
+	err := zap.RegisterSink("pretty", prettyConsoleSink(os.Stderr))
+	if err != nil {
+		log.Fatalf("failed to register pretty printer %+v", err)
+	}
+	err = registerOSSinks()
+	if err != nil {
+		log.Fatalf("failed to register os specific sinks %+v", err)
+	}
 }
+
+// L is shorthand for Logger
+type L = Logger
 
 // Logger is the main interface of this package.
 // It implements uber/zap's SugaredLogger interface and adds conditional logging helpers.
@@ -27,7 +39,6 @@ func init() {
 //    runtime and limited direct testing.
 //  - Critical level logs should only be used when user intervention is required.
 //  - Trace level logs are omitted unless compiled with the trace tag. For example: go test -tags trace ...
-
 type Logger interface {
 	// With creates a new Logger with the given arguments
 	With(args ...interface{}) Logger
@@ -123,7 +134,7 @@ func newProductionConfig(dir string, jsonConsole bool, toDisk bool, unixTS bool)
 }
 
 type Config interface {
-	RootDir() string
+	RootDir(Logger) string
 	JSONConsole() bool
 	LogToDisk() bool
 	LogLevel() zapcore.Level
@@ -134,7 +145,7 @@ type Config interface {
 // If LogToDisk is false, the Logger will only log to stdout.
 // Tests should use TestLogger instead.
 func NewLogger(c Config) Logger {
-	return newLogger(c.LogLevel(), c.RootDir(), c.JSONConsole(), c.LogToDisk(), c.LogUnixTimestamps())
+	return newLogger(c.LogLevel(), c.RootDir(nil), c.JSONConsole(), c.LogToDisk(), c.LogUnixTimestamps())
 }
 
 // newLogger returns a new production Logger with sentry forwarding.

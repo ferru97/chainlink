@@ -211,7 +211,7 @@ func Test_Service_CreateJobProposal(t *testing.T) {
 	)
 	svc := setupTestService(t)
 
-	svc.cfg.On("DefaultHTTPTimeout").Return(models.MustMakeDuration(1 * time.Second))
+	svc.cfg.On("DefaultHTTPTimeout", mock.Anything).Return(models.MustMakeDuration(1 * time.Second))
 	svc.orm.On("CreateJobProposal", &jp).
 		Return(id, nil)
 
@@ -245,7 +245,7 @@ func Test_Service_ProposeJob(t *testing.T) {
 		{
 			name: "Create success",
 			before: func(svc *TestService) {
-				svc.cfg.On("DefaultHTTPTimeout").Return(httpTimeout)
+				svc.cfg.On("DefaultHTTPTimeout", mock.Anything).Return(httpTimeout)
 				svc.orm.On("GetJobProposalByRemoteUUID", jp.RemoteUUID).Return(new(feeds.JobProposal), sql.ErrNoRows)
 				svc.orm.On("UpsertJobProposal", &jp).Return(id, nil)
 			},
@@ -255,7 +255,7 @@ func Test_Service_ProposeJob(t *testing.T) {
 		{
 			name: "Update success",
 			before: func(svc *TestService) {
-				svc.cfg.On("DefaultHTTPTimeout").Return(httpTimeout)
+				svc.cfg.On("DefaultHTTPTimeout", mock.Anything).Return(httpTimeout)
 				svc.orm.
 					On("GetJobProposalByRemoteUUID", jp.RemoteUUID).
 					Return(&feeds.JobProposal{
@@ -271,7 +271,7 @@ func Test_Service_ProposeJob(t *testing.T) {
 		{
 			name: "Updates the status of a rejected job proposal",
 			before: func(svc *TestService) {
-				svc.cfg.On("DefaultHTTPTimeout").Return(httpTimeout)
+				svc.cfg.On("DefaultHTTPTimeout", mock.Anything).Return(httpTimeout)
 				svc.orm.
 					On("GetJobProposalByRemoteUUID", jp.RemoteUUID).
 					Return(&feeds.JobProposal{
@@ -298,7 +298,7 @@ func Test_Service_ProposeJob(t *testing.T) {
 				Multiaddrs: pq.StringArray{"/dns4/example.com"},
 			},
 			before: func(svc *TestService) {
-				svc.cfg.On("DefaultHTTPTimeout").Return(httpTimeout)
+				svc.cfg.On("DefaultHTTPTimeout", mock.Anything).Return(httpTimeout)
 			},
 			wantErr: "only OCR job type supports multiaddr",
 		},
@@ -306,7 +306,7 @@ func Test_Service_ProposeJob(t *testing.T) {
 			name:     "ensure an upsert validates the job propsal belongs to the feeds manager",
 			proposal: jp,
 			before: func(svc *TestService) {
-				svc.cfg.On("DefaultHTTPTimeout").Return(httpTimeout)
+				svc.cfg.On("DefaultHTTPTimeout", mock.Anything).Return(httpTimeout)
 				svc.orm.
 					On("GetJobProposalByRemoteUUID", jp.RemoteUUID).
 					Return(&feeds.JobProposal{
@@ -321,7 +321,7 @@ func Test_Service_ProposeJob(t *testing.T) {
 			name:     "ensure an upsert does not occur on an approved job proposal",
 			proposal: jp,
 			before: func(svc *TestService) {
-				svc.cfg.On("DefaultHTTPTimeout").Return(httpTimeout)
+				svc.cfg.On("DefaultHTTPTimeout", mock.Anything).Return(httpTimeout)
 				svc.orm.
 					On("GetJobProposalByRemoteUUID", jp.RemoteUUID).
 					Return(&feeds.JobProposal{
@@ -531,7 +531,7 @@ answer1 [type=median index=0];
 				svc.orm.On("GetJobProposal", pendingProposal.ID, mock.Anything).Return(pendingProposal, nil)
 				svc.connMgr.On("GetClient", pendingProposal.FeedsManagerID).Return(svc.fmsClient, nil)
 
-				svc.cfg.On("DefaultHTTPTimeout").Return(models.MakeDuration(1 * time.Minute))
+				svc.cfg.On("DefaultHTTPTimeout", mock.Anything).Return(models.MakeDuration(1 * time.Minute))
 				svc.spawner.
 					On("CreateJob",
 						mock.MatchedBy(func(j *job.Job) bool {
@@ -562,7 +562,7 @@ answer1 [type=median index=0];
 				svc.orm.On("GetJobProposal", cancelledProposal.ID, mock.Anything).Return(cancelledProposal, nil)
 				svc.connMgr.On("GetClient", cancelledProposal.FeedsManagerID).Return(svc.fmsClient, nil)
 
-				svc.cfg.On("DefaultHTTPTimeout").Return(models.MakeDuration(1 * time.Minute))
+				svc.cfg.On("DefaultHTTPTimeout", mock.Anything).Return(models.MakeDuration(1 * time.Minute))
 				svc.spawner.
 					On("CreateJob",
 						mock.MatchedBy(func(j *job.Job) bool {
@@ -626,7 +626,7 @@ answer1 [type=median index=0];
 				svc.orm.On("GetJobProposal", pendingProposal.ID, mock.Anything).Return(pendingProposal, nil)
 				svc.connMgr.On("GetClient", pendingProposal.FeedsManagerID).Return(svc.fmsClient, nil)
 
-				svc.cfg.On("DefaultHTTPTimeout").Return(models.MakeDuration(1 * time.Minute))
+				svc.cfg.On("DefaultHTTPTimeout", mock.Anything).Return(models.MakeDuration(1 * time.Minute))
 				svc.spawner.
 					On("CreateJob",
 						mock.MatchedBy(func(j *job.Job) bool {

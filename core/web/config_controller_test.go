@@ -35,5 +35,5 @@ func TestConfigController_Show(t *testing.T) {
 	assert.Len(t, cp.EthereumURL, 0)
 	assert.Equal(t, big.NewInt(eth.NullClientChainID).String(), cp.DefaultChainID)
 	assert.Contains(t, cp.ClientNodeURL, "http://127.0.0.1:")
-	assert.Equal(t, cltest.NewTestGeneralConfig(t).BlockBackfillDepth(), cp.BlockBackfillDepth)
+	assert.Equal(t, cltest.NewTestGeneralConfig(t).BlockBackfillDepth(nil), cp.BlockBackfillDepth)
 }

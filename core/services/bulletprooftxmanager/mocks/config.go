@@ -9,6 +9,8 @@ import (
 
 	common "github.com/ethereum/go-ethereum/common"
 
+	logger "github.com/smartcontractkit/chainlink/core/logger"
+
 	mock "github.com/stretchr/testify/mock"
 
 	time "time"
@@ -441,13 +443,13 @@ func (_m *Config) LogSQL() bool {
 	return r0
 }
 
-// TriggerFallbackDBPollInterval provides a mock function with given fields:
-func (_m *Config) TriggerFallbackDBPollInterval() time.Duration {
-	ret := _m.Called()
+// TriggerFallbackDBPollInterval provides a mock function with given fields: _a0
+func (_m *Config) TriggerFallbackDBPollInterval(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}

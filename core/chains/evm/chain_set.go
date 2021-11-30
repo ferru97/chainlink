@@ -291,14 +291,16 @@ func NewChainSet(opts ChainSetOpts, dbchains []types.Chain) (ChainSet, error) {
 		return nil, err
 	}
 	lggr := opts.Logger.Named("EVM")
-	defaultChainID := opts.Config.DefaultChainID()
+	defaultChainID, err := opts.Config.DefaultChainID()
+	if err != nil {
+		lggr.Error(err)
+	}
 	if defaultChainID == nil && len(dbchains) >= 1 {
 		defaultChainID = dbchains[0].ID.ToInt()
 		if len(dbchains) > 1 {
 			lggr.Debugf("Multiple chains present but ETH_CHAIN_ID was not specified, falling back to default chain: %s", defaultChainID.String())
 		}
 	}
-	var err error
 	cll := &chainSet{defaultChainID, make(map[string]*chain), sync.RWMutex{}, lggr, opts.ORM, opts}
 	for i := range dbchains {
 		cid := dbchains[i].ID.String()

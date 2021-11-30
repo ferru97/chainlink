@@ -95,10 +95,10 @@ func (d *Delegate) ServicesForSpec(spec job.Job) (services []job.Service, err er
 		ORM:                      orm,
 		JRM:                      d.jrm,
 		LogBroadcaster:           chain.LogBroadcaster(),
-		SyncInterval:             chain.Config().KeeperRegistrySyncInterval(),
+		SyncInterval:             chain.Config().KeeperRegistrySyncInterval(d.logger),
 		MinIncomingConfirmations: minIncomingConfirmations,
 		Logger:                   svcLogger,
-		SyncUpkeepQueueSize:      chain.Config().KeeperRegistrySyncUpkeepQueueSize(),
+		SyncUpkeepQueueSize:      chain.Config().KeeperRegistrySyncUpkeepQueueSize(d.logger),
 	})
 	upkeepExecuter := NewUpkeepExecuter(
 		spec,

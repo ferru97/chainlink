@@ -19,6 +19,8 @@ import (
 
 	ethkey "github.com/smartcontractkit/chainlink/core/services/keystore/keys/ethkey"
 
+	logger "github.com/smartcontractkit/chainlink/core/logger"
+
 	mock "github.com/stretchr/testify/mock"
 
 	models "github.com/smartcontractkit/chainlink/core/store/models"
@@ -47,13 +49,13 @@ type ChainScopedConfig struct {
 	mock.Mock
 }
 
-// AdminCredentialsFile provides a mock function with given fields:
-func (_m *ChainScopedConfig) AdminCredentialsFile() string {
-	ret := _m.Called()
+// AdminCredentialsFile provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) AdminCredentialsFile(_a0 logger.Logger) string {
+	ret := _m.Called(_a0)
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) string); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
@@ -89,13 +91,13 @@ func (_m *ChainScopedConfig) AuthenticatedRateLimit() int64 {
 	return r0
 }
 
-// AuthenticatedRateLimitPeriod provides a mock function with given fields:
-func (_m *ChainScopedConfig) AuthenticatedRateLimitPeriod() models.Duration {
-	ret := _m.Called()
+// AuthenticatedRateLimitPeriod provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) AuthenticatedRateLimitPeriod(_a0 logger.Logger) models.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 models.Duration
-	if rf, ok := ret.Get(0).(func() models.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) models.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(models.Duration)
 	}
@@ -145,13 +147,13 @@ func (_m *ChainScopedConfig) AutoPprofEnabled() bool {
 	return r0
 }
 
-// AutoPprofGatherDuration provides a mock function with given fields:
-func (_m *ChainScopedConfig) AutoPprofGatherDuration() models.Duration {
-	ret := _m.Called()
+// AutoPprofGatherDuration provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) AutoPprofGatherDuration(_a0 logger.Logger) models.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 models.Duration
-	if rf, ok := ret.Get(0).(func() models.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) models.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(models.Duration)
 	}
@@ -159,13 +161,13 @@ func (_m *ChainScopedConfig) AutoPprofGatherDuration() models.Duration {
 	return r0
 }
 
-// AutoPprofGatherTraceDuration provides a mock function with given fields:
-func (_m *ChainScopedConfig) AutoPprofGatherTraceDuration() models.Duration {
-	ret := _m.Called()
+// AutoPprofGatherTraceDuration provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) AutoPprofGatherTraceDuration(_a0 logger.Logger) models.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 models.Duration
-	if rf, ok := ret.Get(0).(func() models.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) models.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(models.Duration)
 	}
@@ -187,13 +189,13 @@ func (_m *ChainScopedConfig) AutoPprofGoroutineThreshold() int {
 	return r0
 }
 
-// AutoPprofMaxProfileSize provides a mock function with given fields:
-func (_m *ChainScopedConfig) AutoPprofMaxProfileSize() utils.FileSize {
-	ret := _m.Called()
+// AutoPprofMaxProfileSize provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) AutoPprofMaxProfileSize(_a0 logger.Logger) utils.FileSize {
+	ret := _m.Called(_a0)
 
 	var r0 utils.FileSize
-	if rf, ok := ret.Get(0).(func() utils.FileSize); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) utils.FileSize); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(utils.FileSize)
 	}
@@ -215,13 +217,13 @@ func (_m *ChainScopedConfig) AutoPprofMemProfileRate() int {
 	return r0
 }
 
-// AutoPprofMemThreshold provides a mock function with given fields:
-func (_m *ChainScopedConfig) AutoPprofMemThreshold() utils.FileSize {
-	ret := _m.Called()
+// AutoPprofMemThreshold provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) AutoPprofMemThreshold(_a0 logger.Logger) utils.FileSize {
+	ret := _m.Called(_a0)
 
 	var r0 utils.FileSize
-	if rf, ok := ret.Get(0).(func() utils.FileSize); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) utils.FileSize); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(utils.FileSize)
 	}
@@ -243,13 +245,13 @@ func (_m *ChainScopedConfig) AutoPprofMutexProfileFraction() int {
 	return r0
 }
 
-// AutoPprofPollInterval provides a mock function with given fields:
-func (_m *ChainScopedConfig) AutoPprofPollInterval() models.Duration {
-	ret := _m.Called()
+// AutoPprofPollInterval provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) AutoPprofPollInterval(_a0 logger.Logger) models.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 models.Duration
-	if rf, ok := ret.Get(0).(func() models.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) models.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(models.Duration)
 	}
@@ -257,13 +259,13 @@ func (_m *ChainScopedConfig) AutoPprofPollInterval() models.Duration {
 	return r0
 }
 
-// AutoPprofProfileRoot provides a mock function with given fields:
-func (_m *ChainScopedConfig) AutoPprofProfileRoot() string {
-	ret := _m.Called()
+// AutoPprofProfileRoot provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) AutoPprofProfileRoot(_a0 logger.Logger) string {
+	ret := _m.Called(_a0)
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) string); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
@@ -285,13 +287,13 @@ func (_m *ChainScopedConfig) BalanceMonitorEnabled() bool {
 	return r0
 }
 
-// BlockBackfillDepth provides a mock function with given fields:
-func (_m *ChainScopedConfig) BlockBackfillDepth() uint64 {
-	ret := _m.Called()
+// BlockBackfillDepth provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) BlockBackfillDepth(_a0 logger.Logger) uint64 {
+	ret := _m.Called(_a0)
 
 	var r0 uint64
-	if rf, ok := ret.Get(0).(func() uint64); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint64); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
@@ -299,13 +301,13 @@ func (_m *ChainScopedConfig) BlockBackfillDepth() uint64 {
 	return r0
 }
 
-// BlockBackfillSkip provides a mock function with given fields:
-func (_m *ChainScopedConfig) BlockBackfillSkip() bool {
-	ret := _m.Called()
+// BlockBackfillSkip provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) BlockBackfillSkip(_a0 logger.Logger) bool {
+	ret := _m.Called(_a0)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) bool); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
@@ -383,13 +385,13 @@ func (_m *ChainScopedConfig) BlockHistoryEstimatorTransactionPercentile() uint16
 	return r0
 }
 
-// BridgeResponseURL provides a mock function with given fields:
-func (_m *ChainScopedConfig) BridgeResponseURL() *url.URL {
-	ret := _m.Called()
+// BridgeResponseURL provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) BridgeResponseURL(_a0 logger.Logger) *url.URL {
+	ret := _m.Called(_a0)
 
 	var r0 *url.URL
-	if rf, ok := ret.Get(0).(func() *url.URL); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) *url.URL); ok {
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*url.URL)
@@ -399,13 +401,13 @@ func (_m *ChainScopedConfig) BridgeResponseURL() *url.URL {
 	return r0
 }
 
-// CertFile provides a mock function with given fields:
-func (_m *ChainScopedConfig) CertFile() string {
-	ret := _m.Called()
+// CertFile provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) CertFile(_a0 logger.Logger) string {
+	ret := _m.Called(_a0)
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) string); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
@@ -485,13 +487,13 @@ func (_m *ChainScopedConfig) DatabaseBackupDir() string {
 	return r0
 }
 
-// DatabaseBackupFrequency provides a mock function with given fields:
-func (_m *ChainScopedConfig) DatabaseBackupFrequency() time.Duration {
-	ret := _m.Called()
+// DatabaseBackupFrequency provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) DatabaseBackupFrequency(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -499,13 +501,13 @@ func (_m *ChainScopedConfig) DatabaseBackupFrequency() time.Duration {
 	return r0
 }
 
-// DatabaseBackupMode provides a mock function with given fields:
-func (_m *ChainScopedConfig) DatabaseBackupMode() coreconfig.DatabaseBackupMode {
-	ret := _m.Called()
+// DatabaseBackupMode provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) DatabaseBackupMode(_a0 logger.Logger) coreconfig.DatabaseBackupMode {
+	ret := _m.Called(_a0)
 
 	var r0 coreconfig.DatabaseBackupMode
-	if rf, ok := ret.Get(0).(func() coreconfig.DatabaseBackupMode); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) coreconfig.DatabaseBackupMode); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(coreconfig.DatabaseBackupMode)
 	}
@@ -514,7 +516,7 @@ func (_m *ChainScopedConfig) DatabaseBackupMode() coreconfig.DatabaseBackupMode 
 }
 
 // DatabaseBackupURL provides a mock function with given fields:
-func (_m *ChainScopedConfig) DatabaseBackupURL() *url.URL {
+func (_m *ChainScopedConfig) DatabaseBackupURL() (*url.URL, error) {
 	ret := _m.Called()
 
 	var r0 *url.URL
@@ -526,16 +528,23 @@ func (_m *ChainScopedConfig) DatabaseBackupURL() *url.URL {
 		}
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
-// DatabaseListenerMaxReconnectDuration provides a mock function with given fields:
-func (_m *ChainScopedConfig) DatabaseListenerMaxReconnectDuration() time.Duration {
-	ret := _m.Called()
+// DatabaseListenerMaxReconnectDuration provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) DatabaseListenerMaxReconnectDuration(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -543,13 +552,13 @@ func (_m *ChainScopedConfig) DatabaseListenerMaxReconnectDuration() time.Duratio
 	return r0
 }
 
-// DatabaseListenerMinReconnectInterval provides a mock function with given fields:
-func (_m *ChainScopedConfig) DatabaseListenerMinReconnectInterval() time.Duration {
-	ret := _m.Called()
+// DatabaseListenerMinReconnectInterval provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) DatabaseListenerMinReconnectInterval(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -557,13 +566,13 @@ func (_m *ChainScopedConfig) DatabaseListenerMinReconnectInterval() time.Duratio
 	return r0
 }
 
-// DatabaseLockingMode provides a mock function with given fields:
-func (_m *ChainScopedConfig) DatabaseLockingMode() string {
-	ret := _m.Called()
+// DatabaseLockingMode provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) DatabaseLockingMode(_a0 logger.Logger) string {
+	ret := _m.Called(_a0)
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) string); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
@@ -572,7 +581,7 @@ func (_m *ChainScopedConfig) DatabaseLockingMode() string {
 }
 
 // DatabaseURL provides a mock function with given fields:
-func (_m *ChainScopedConfig) DatabaseURL() url.URL {
+func (_m *ChainScopedConfig) DatabaseURL() (url.URL, error) {
 	ret := _m.Called()
 
 	var r0 url.URL
@@ -582,11 +591,18 @@ func (_m *ChainScopedConfig) DatabaseURL() url.URL {
 		r0 = ret.Get(0).(url.URL)
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // DefaultChainID provides a mock function with given fields:
-func (_m *ChainScopedConfig) DefaultChainID() *big.Int {
+func (_m *ChainScopedConfig) DefaultChainID() (*big.Int, error) {
 	ret := _m.Called()
 
 	var r0 *big.Int
@@ -598,7 +614,14 @@ func (_m *ChainScopedConfig) DefaultChainID() *big.Int {
 		}
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // DefaultHTTPAllowUnrestrictedNetworkAccess provides a mock function with given fields:
@@ -629,13 +652,13 @@ func (_m *ChainScopedConfig) DefaultHTTPLimit() int64 {
 	return r0
 }
 
-// DefaultHTTPTimeout provides a mock function with given fields:
-func (_m *ChainScopedConfig) DefaultHTTPTimeout() models.Duration {
-	ret := _m.Called()
+// DefaultHTTPTimeout provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) DefaultHTTPTimeout(_a0 logger.Logger) models.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 models.Duration
-	if rf, ok := ret.Get(0).(func() models.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) models.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(models.Duration)
 	}
@@ -657,13 +680,13 @@ func (_m *ChainScopedConfig) DefaultLogLevel() zapcore.Level {
 	return r0
 }
 
-// DefaultMaxHTTPAttempts provides a mock function with given fields:
-func (_m *ChainScopedConfig) DefaultMaxHTTPAttempts() uint {
-	ret := _m.Called()
+// DefaultMaxHTTPAttempts provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) DefaultMaxHTTPAttempts(_a0 logger.Logger) uint {
+	ret := _m.Called(_a0)
 
 	var r0 uint
-	if rf, ok := ret.Get(0).(func() uint); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint)
 	}
@@ -756,7 +779,7 @@ func (_m *ChainScopedConfig) EthereumDisabled() bool {
 }
 
 // EthereumHTTPURL provides a mock function with given fields:
-func (_m *ChainScopedConfig) EthereumHTTPURL() *url.URL {
+func (_m *ChainScopedConfig) EthereumHTTPURL() (*url.URL, error) {
 	ret := _m.Called()
 
 	var r0 *url.URL
@@ -768,11 +791,18 @@ func (_m *ChainScopedConfig) EthereumHTTPURL() *url.URL {
 		}
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // EthereumSecondaryURLs provides a mock function with given fields:
-func (_m *ChainScopedConfig) EthereumSecondaryURLs() []url.URL {
+func (_m *ChainScopedConfig) EthereumSecondaryURLs() ([]url.URL, error) {
 	ret := _m.Called()
 
 	var r0 []url.URL
@@ -784,7 +814,14 @@ func (_m *ChainScopedConfig) EthereumSecondaryURLs() []url.URL {
 		}
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // EthereumURL provides a mock function with given fields:
@@ -1179,13 +1216,13 @@ func (_m *ChainScopedConfig) ExplorerSecret() string {
 	return r0
 }
 
-// ExplorerURL provides a mock function with given fields:
-func (_m *ChainScopedConfig) ExplorerURL() *url.URL {
-	ret := _m.Called()
+// ExplorerURL provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) ExplorerURL(_a0 logger.Logger) *url.URL {
+	ret := _m.Called(_a0)
 
 	var r0 *url.URL
-	if rf, ok := ret.Get(0).(func() *url.URL); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) *url.URL); ok {
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*url.URL)
@@ -1237,13 +1274,13 @@ func (_m *ChainScopedConfig) FeatureExternalInitiators() bool {
 	return r0
 }
 
-// FeatureOffchainReporting provides a mock function with given fields:
-func (_m *ChainScopedConfig) FeatureOffchainReporting() bool {
-	ret := _m.Called()
+// FeatureOffchainReporting provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) FeatureOffchainReporting(_a0 logger.Logger) bool {
+	ret := _m.Called(_a0)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) bool); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
@@ -1251,13 +1288,13 @@ func (_m *ChainScopedConfig) FeatureOffchainReporting() bool {
 	return r0
 }
 
-// FeatureOffchainReporting2 provides a mock function with given fields:
-func (_m *ChainScopedConfig) FeatureOffchainReporting2() bool {
-	ret := _m.Called()
+// FeatureOffchainReporting2 provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) FeatureOffchainReporting2(_a0 logger.Logger) bool {
+	ret := _m.Called(_a0)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) bool); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
@@ -1265,13 +1302,13 @@ func (_m *ChainScopedConfig) FeatureOffchainReporting2() bool {
 	return r0
 }
 
-// FeatureUICSAKeys provides a mock function with given fields:
-func (_m *ChainScopedConfig) FeatureUICSAKeys() bool {
-	ret := _m.Called()
+// FeatureUICSAKeys provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) FeatureUICSAKeys(_a0 logger.Logger) bool {
+	ret := _m.Called(_a0)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) bool); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
@@ -1279,13 +1316,13 @@ func (_m *ChainScopedConfig) FeatureUICSAKeys() bool {
 	return r0
 }
 
-// FeatureUIFeedsManager provides a mock function with given fields:
-func (_m *ChainScopedConfig) FeatureUIFeedsManager() bool {
-	ret := _m.Called()
+// FeatureUIFeedsManager provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) FeatureUIFeedsManager(_a0 logger.Logger) bool {
+	ret := _m.Called(_a0)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) bool); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
@@ -1349,20 +1386,20 @@ func (_m *ChainScopedConfig) GetDatabaseDialectConfiguredOrDefault() dialects.Di
 	return r0
 }
 
-// GlobalBalanceMonitorEnabled provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalBalanceMonitorEnabled() (bool, bool) {
-	ret := _m.Called()
+// GlobalBalanceMonitorEnabled provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalBalanceMonitorEnabled(_a0 logger.Logger) (bool, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) bool); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1370,20 +1407,20 @@ func (_m *ChainScopedConfig) GlobalBalanceMonitorEnabled() (bool, bool) {
 	return r0, r1
 }
 
-// GlobalBlockEmissionIdleWarningThreshold provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalBlockEmissionIdleWarningThreshold() (time.Duration, bool) {
-	ret := _m.Called()
+// GlobalBlockEmissionIdleWarningThreshold provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalBlockEmissionIdleWarningThreshold(_a0 logger.Logger) (time.Duration, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1391,20 +1428,20 @@ func (_m *ChainScopedConfig) GlobalBlockEmissionIdleWarningThreshold() (time.Dur
 	return r0, r1
 }
 
-// GlobalBlockHistoryEstimatorBatchSize provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalBlockHistoryEstimatorBatchSize() (uint32, bool) {
-	ret := _m.Called()
+// GlobalBlockHistoryEstimatorBatchSize provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalBlockHistoryEstimatorBatchSize(_a0 logger.Logger) (uint32, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint32
-	if rf, ok := ret.Get(0).(func() uint32); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint32); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1412,20 +1449,20 @@ func (_m *ChainScopedConfig) GlobalBlockHistoryEstimatorBatchSize() (uint32, boo
 	return r0, r1
 }
 
-// GlobalBlockHistoryEstimatorBlockDelay provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalBlockHistoryEstimatorBlockDelay() (uint16, bool) {
-	ret := _m.Called()
+// GlobalBlockHistoryEstimatorBlockDelay provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalBlockHistoryEstimatorBlockDelay(_a0 logger.Logger) (uint16, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint16
-	if rf, ok := ret.Get(0).(func() uint16); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint16); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint16)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1433,20 +1470,20 @@ func (_m *ChainScopedConfig) GlobalBlockHistoryEstimatorBlockDelay() (uint16, bo
 	return r0, r1
 }
 
-// GlobalBlockHistoryEstimatorBlockHistorySize provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalBlockHistoryEstimatorBlockHistorySize() (uint16, bool) {
-	ret := _m.Called()
+// GlobalBlockHistoryEstimatorBlockHistorySize provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalBlockHistoryEstimatorBlockHistorySize(_a0 logger.Logger) (uint16, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint16
-	if rf, ok := ret.Get(0).(func() uint16); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint16); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint16)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1454,20 +1491,20 @@ func (_m *ChainScopedConfig) GlobalBlockHistoryEstimatorBlockHistorySize() (uint
 	return r0, r1
 }
 
-// GlobalBlockHistoryEstimatorTransactionPercentile provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalBlockHistoryEstimatorTransactionPercentile() (uint16, bool) {
-	ret := _m.Called()
+// GlobalBlockHistoryEstimatorTransactionPercentile provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalBlockHistoryEstimatorTransactionPercentile(_a0 logger.Logger) (uint16, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint16
-	if rf, ok := ret.Get(0).(func() uint16); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint16); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint16)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1496,20 +1533,20 @@ func (_m *ChainScopedConfig) GlobalChainType() (string, bool) {
 	return r0, r1
 }
 
-// GlobalEthTxReaperInterval provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEthTxReaperInterval() (time.Duration, bool) {
-	ret := _m.Called()
+// GlobalEthTxReaperInterval provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEthTxReaperInterval(_a0 logger.Logger) (time.Duration, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1517,20 +1554,20 @@ func (_m *ChainScopedConfig) GlobalEthTxReaperInterval() (time.Duration, bool) {
 	return r0, r1
 }
 
-// GlobalEthTxReaperThreshold provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEthTxReaperThreshold() (time.Duration, bool) {
-	ret := _m.Called()
+// GlobalEthTxReaperThreshold provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEthTxReaperThreshold(_a0 logger.Logger) (time.Duration, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1538,20 +1575,20 @@ func (_m *ChainScopedConfig) GlobalEthTxReaperThreshold() (time.Duration, bool) 
 	return r0, r1
 }
 
-// GlobalEthTxResendAfterThreshold provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEthTxResendAfterThreshold() (time.Duration, bool) {
-	ret := _m.Called()
+// GlobalEthTxResendAfterThreshold provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEthTxResendAfterThreshold(_a0 logger.Logger) (time.Duration, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1559,20 +1596,20 @@ func (_m *ChainScopedConfig) GlobalEthTxResendAfterThreshold() (time.Duration, b
 	return r0, r1
 }
 
-// GlobalEvmDefaultBatchSize provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmDefaultBatchSize() (uint32, bool) {
-	ret := _m.Called()
+// GlobalEvmDefaultBatchSize provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmDefaultBatchSize(_a0 logger.Logger) (uint32, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint32
-	if rf, ok := ret.Get(0).(func() uint32); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint32); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1580,20 +1617,20 @@ func (_m *ChainScopedConfig) GlobalEvmDefaultBatchSize() (uint32, bool) {
 	return r0, r1
 }
 
-// GlobalEvmEIP1559DynamicFees provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmEIP1559DynamicFees() (bool, bool) {
-	ret := _m.Called()
+// GlobalEvmEIP1559DynamicFees provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmEIP1559DynamicFees(_a0 logger.Logger) (bool, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) bool); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1601,20 +1638,20 @@ func (_m *ChainScopedConfig) GlobalEvmEIP1559DynamicFees() (bool, bool) {
 	return r0, r1
 }
 
-// GlobalEvmFinalityDepth provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmFinalityDepth() (uint32, bool) {
-	ret := _m.Called()
+// GlobalEvmFinalityDepth provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmFinalityDepth(_a0 logger.Logger) (uint32, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint32
-	if rf, ok := ret.Get(0).(func() uint32); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint32); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1622,20 +1659,20 @@ func (_m *ChainScopedConfig) GlobalEvmFinalityDepth() (uint32, bool) {
 	return r0, r1
 }
 
-// GlobalEvmGasBumpPercent provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmGasBumpPercent() (uint16, bool) {
-	ret := _m.Called()
+// GlobalEvmGasBumpPercent provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmGasBumpPercent(_a0 logger.Logger) (uint16, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint16
-	if rf, ok := ret.Get(0).(func() uint16); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint16); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint16)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1643,20 +1680,20 @@ func (_m *ChainScopedConfig) GlobalEvmGasBumpPercent() (uint16, bool) {
 	return r0, r1
 }
 
-// GlobalEvmGasBumpThreshold provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmGasBumpThreshold() (uint64, bool) {
-	ret := _m.Called()
+// GlobalEvmGasBumpThreshold provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmGasBumpThreshold(_a0 logger.Logger) (uint64, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint64
-	if rf, ok := ret.Get(0).(func() uint64); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint64); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1664,20 +1701,20 @@ func (_m *ChainScopedConfig) GlobalEvmGasBumpThreshold() (uint64, bool) {
 	return r0, r1
 }
 
-// GlobalEvmGasBumpTxDepth provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmGasBumpTxDepth() (uint16, bool) {
-	ret := _m.Called()
+// GlobalEvmGasBumpTxDepth provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmGasBumpTxDepth(_a0 logger.Logger) (uint16, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint16
-	if rf, ok := ret.Get(0).(func() uint16); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint16); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint16)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1685,13 +1722,13 @@ func (_m *ChainScopedConfig) GlobalEvmGasBumpTxDepth() (uint16, bool) {
 	return r0, r1
 }
 
-// GlobalEvmGasBumpWei provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmGasBumpWei() (*big.Int, bool) {
-	ret := _m.Called()
+// GlobalEvmGasBumpWei provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmGasBumpWei(_a0 logger.Logger) (*big.Int, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func() *big.Int); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) *big.Int); ok {
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -1699,8 +1736,8 @@ func (_m *ChainScopedConfig) GlobalEvmGasBumpWei() (*big.Int, bool) {
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1708,20 +1745,20 @@ func (_m *ChainScopedConfig) GlobalEvmGasBumpWei() (*big.Int, bool) {
 	return r0, r1
 }
 
-// GlobalEvmGasLimitDefault provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmGasLimitDefault() (uint64, bool) {
-	ret := _m.Called()
+// GlobalEvmGasLimitDefault provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmGasLimitDefault(_a0 logger.Logger) (uint64, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint64
-	if rf, ok := ret.Get(0).(func() uint64); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint64); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1729,20 +1766,20 @@ func (_m *ChainScopedConfig) GlobalEvmGasLimitDefault() (uint64, bool) {
 	return r0, r1
 }
 
-// GlobalEvmGasLimitMultiplier provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmGasLimitMultiplier() (float32, bool) {
-	ret := _m.Called()
+// GlobalEvmGasLimitMultiplier provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmGasLimitMultiplier(_a0 logger.Logger) (float32, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 float32
-	if rf, ok := ret.Get(0).(func() float32); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) float32); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(float32)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1750,20 +1787,20 @@ func (_m *ChainScopedConfig) GlobalEvmGasLimitMultiplier() (float32, bool) {
 	return r0, r1
 }
 
-// GlobalEvmGasLimitTransfer provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmGasLimitTransfer() (uint64, bool) {
-	ret := _m.Called()
+// GlobalEvmGasLimitTransfer provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmGasLimitTransfer(_a0 logger.Logger) (uint64, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint64
-	if rf, ok := ret.Get(0).(func() uint64); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint64); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1771,13 +1808,13 @@ func (_m *ChainScopedConfig) GlobalEvmGasLimitTransfer() (uint64, bool) {
 	return r0, r1
 }
 
-// GlobalEvmGasPriceDefault provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmGasPriceDefault() (*big.Int, bool) {
-	ret := _m.Called()
+// GlobalEvmGasPriceDefault provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmGasPriceDefault(_a0 logger.Logger) (*big.Int, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func() *big.Int); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) *big.Int); ok {
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -1785,8 +1822,8 @@ func (_m *ChainScopedConfig) GlobalEvmGasPriceDefault() (*big.Int, bool) {
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1794,13 +1831,13 @@ func (_m *ChainScopedConfig) GlobalEvmGasPriceDefault() (*big.Int, bool) {
 	return r0, r1
 }
 
-// GlobalEvmGasTipCapDefault provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmGasTipCapDefault() (*big.Int, bool) {
-	ret := _m.Called()
+// GlobalEvmGasTipCapDefault provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmGasTipCapDefault(_a0 logger.Logger) (*big.Int, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func() *big.Int); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) *big.Int); ok {
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -1808,8 +1845,8 @@ func (_m *ChainScopedConfig) GlobalEvmGasTipCapDefault() (*big.Int, bool) {
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1817,13 +1854,13 @@ func (_m *ChainScopedConfig) GlobalEvmGasTipCapDefault() (*big.Int, bool) {
 	return r0, r1
 }
 
-// GlobalEvmGasTipCapMinimum provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmGasTipCapMinimum() (*big.Int, bool) {
-	ret := _m.Called()
+// GlobalEvmGasTipCapMinimum provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmGasTipCapMinimum(_a0 logger.Logger) (*big.Int, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func() *big.Int); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) *big.Int); ok {
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -1831,8 +1868,8 @@ func (_m *ChainScopedConfig) GlobalEvmGasTipCapMinimum() (*big.Int, bool) {
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1840,20 +1877,20 @@ func (_m *ChainScopedConfig) GlobalEvmGasTipCapMinimum() (*big.Int, bool) {
 	return r0, r1
 }
 
-// GlobalEvmHeadTrackerHistoryDepth provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmHeadTrackerHistoryDepth() (uint32, bool) {
-	ret := _m.Called()
+// GlobalEvmHeadTrackerHistoryDepth provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmHeadTrackerHistoryDepth(_a0 logger.Logger) (uint32, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint32
-	if rf, ok := ret.Get(0).(func() uint32); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint32); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1861,20 +1898,20 @@ func (_m *ChainScopedConfig) GlobalEvmHeadTrackerHistoryDepth() (uint32, bool) {
 	return r0, r1
 }
 
-// GlobalEvmHeadTrackerMaxBufferSize provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmHeadTrackerMaxBufferSize() (uint32, bool) {
-	ret := _m.Called()
+// GlobalEvmHeadTrackerMaxBufferSize provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmHeadTrackerMaxBufferSize(_a0 logger.Logger) (uint32, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint32
-	if rf, ok := ret.Get(0).(func() uint32); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint32); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1882,20 +1919,20 @@ func (_m *ChainScopedConfig) GlobalEvmHeadTrackerMaxBufferSize() (uint32, bool) 
 	return r0, r1
 }
 
-// GlobalEvmHeadTrackerSamplingInterval provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmHeadTrackerSamplingInterval() (time.Duration, bool) {
-	ret := _m.Called()
+// GlobalEvmHeadTrackerSamplingInterval provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmHeadTrackerSamplingInterval(_a0 logger.Logger) (time.Duration, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1903,20 +1940,20 @@ func (_m *ChainScopedConfig) GlobalEvmHeadTrackerSamplingInterval() (time.Durati
 	return r0, r1
 }
 
-// GlobalEvmLogBackfillBatchSize provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmLogBackfillBatchSize() (uint32, bool) {
-	ret := _m.Called()
+// GlobalEvmLogBackfillBatchSize provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmLogBackfillBatchSize(_a0 logger.Logger) (uint32, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint32
-	if rf, ok := ret.Get(0).(func() uint32); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint32); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1924,13 +1961,13 @@ func (_m *ChainScopedConfig) GlobalEvmLogBackfillBatchSize() (uint32, bool) {
 	return r0, r1
 }
 
-// GlobalEvmMaxGasPriceWei provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmMaxGasPriceWei() (*big.Int, bool) {
-	ret := _m.Called()
+// GlobalEvmMaxGasPriceWei provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmMaxGasPriceWei(_a0 logger.Logger) (*big.Int, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func() *big.Int); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) *big.Int); ok {
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -1938,8 +1975,8 @@ func (_m *ChainScopedConfig) GlobalEvmMaxGasPriceWei() (*big.Int, bool) {
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1947,20 +1984,20 @@ func (_m *ChainScopedConfig) GlobalEvmMaxGasPriceWei() (*big.Int, bool) {
 	return r0, r1
 }
 
-// GlobalEvmMaxInFlightTransactions provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmMaxInFlightTransactions() (uint32, bool) {
-	ret := _m.Called()
+// GlobalEvmMaxInFlightTransactions provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmMaxInFlightTransactions(_a0 logger.Logger) (uint32, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint32
-	if rf, ok := ret.Get(0).(func() uint32); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint32); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1968,20 +2005,20 @@ func (_m *ChainScopedConfig) GlobalEvmMaxInFlightTransactions() (uint32, bool) {
 	return r0, r1
 }
 
-// GlobalEvmMaxQueuedTransactions provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmMaxQueuedTransactions() (uint64, bool) {
-	ret := _m.Called()
+// GlobalEvmMaxQueuedTransactions provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmMaxQueuedTransactions(_a0 logger.Logger) (uint64, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint64
-	if rf, ok := ret.Get(0).(func() uint64); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint64); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -1989,13 +2026,13 @@ func (_m *ChainScopedConfig) GlobalEvmMaxQueuedTransactions() (uint64, bool) {
 	return r0, r1
 }
 
-// GlobalEvmMinGasPriceWei provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmMinGasPriceWei() (*big.Int, bool) {
-	ret := _m.Called()
+// GlobalEvmMinGasPriceWei provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmMinGasPriceWei(_a0 logger.Logger) (*big.Int, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 *big.Int
-	if rf, ok := ret.Get(0).(func() *big.Int); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) *big.Int); ok {
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*big.Int)
@@ -2003,8 +2040,8 @@ func (_m *ChainScopedConfig) GlobalEvmMinGasPriceWei() (*big.Int, bool) {
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -2012,20 +2049,20 @@ func (_m *ChainScopedConfig) GlobalEvmMinGasPriceWei() (*big.Int, bool) {
 	return r0, r1
 }
 
-// GlobalEvmNonceAutoSync provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmNonceAutoSync() (bool, bool) {
-	ret := _m.Called()
+// GlobalEvmNonceAutoSync provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmNonceAutoSync(_a0 logger.Logger) (bool, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) bool); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -2033,20 +2070,20 @@ func (_m *ChainScopedConfig) GlobalEvmNonceAutoSync() (bool, bool) {
 	return r0, r1
 }
 
-// GlobalEvmRPCDefaultBatchSize provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalEvmRPCDefaultBatchSize() (uint32, bool) {
-	ret := _m.Called()
+// GlobalEvmRPCDefaultBatchSize provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalEvmRPCDefaultBatchSize(_a0 logger.Logger) (uint32, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint32
-	if rf, ok := ret.Get(0).(func() uint32); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint32); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -2117,13 +2154,13 @@ func (_m *ChainScopedConfig) GlobalLinkContractAddress() (string, bool) {
 	return r0, r1
 }
 
-// GlobalLockRetryInterval provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalLockRetryInterval() models.Duration {
-	ret := _m.Called()
+// GlobalLockRetryInterval provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalLockRetryInterval(_a0 logger.Logger) models.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 models.Duration
-	if rf, ok := ret.Get(0).(func() models.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) models.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(models.Duration)
 	}
@@ -2131,20 +2168,20 @@ func (_m *ChainScopedConfig) GlobalLockRetryInterval() models.Duration {
 	return r0
 }
 
-// GlobalMinIncomingConfirmations provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalMinIncomingConfirmations() (uint32, bool) {
-	ret := _m.Called()
+// GlobalMinIncomingConfirmations provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalMinIncomingConfirmations(_a0 logger.Logger) (uint32, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint32
-	if rf, ok := ret.Get(0).(func() uint32); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint32); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -2152,20 +2189,20 @@ func (_m *ChainScopedConfig) GlobalMinIncomingConfirmations() (uint32, bool) {
 	return r0, r1
 }
 
-// GlobalMinRequiredOutgoingConfirmations provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalMinRequiredOutgoingConfirmations() (uint64, bool) {
-	ret := _m.Called()
+// GlobalMinRequiredOutgoingConfirmations provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalMinRequiredOutgoingConfirmations(_a0 logger.Logger) (uint64, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint64
-	if rf, ok := ret.Get(0).(func() uint64); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint64); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -2173,13 +2210,13 @@ func (_m *ChainScopedConfig) GlobalMinRequiredOutgoingConfirmations() (uint64, b
 	return r0, r1
 }
 
-// GlobalMinimumContractPayment provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalMinimumContractPayment() (*assets.Link, bool) {
-	ret := _m.Called()
+// GlobalMinimumContractPayment provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalMinimumContractPayment(_a0 logger.Logger) (*assets.Link, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 *assets.Link
-	if rf, ok := ret.Get(0).(func() *assets.Link); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) *assets.Link); ok {
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*assets.Link)
@@ -2187,8 +2224,8 @@ func (_m *ChainScopedConfig) GlobalMinimumContractPayment() (*assets.Link, bool)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -2196,20 +2233,20 @@ func (_m *ChainScopedConfig) GlobalMinimumContractPayment() (*assets.Link, bool)
 	return r0, r1
 }
 
-// GlobalOCR2ContractConfirmations provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalOCR2ContractConfirmations() (uint16, bool) {
-	ret := _m.Called()
+// GlobalOCR2ContractConfirmations provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalOCR2ContractConfirmations(_a0 logger.Logger) (uint16, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint16
-	if rf, ok := ret.Get(0).(func() uint16); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint16); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint16)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -2217,20 +2254,20 @@ func (_m *ChainScopedConfig) GlobalOCR2ContractConfirmations() (uint16, bool) {
 	return r0, r1
 }
 
-// GlobalOCRContractConfirmations provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalOCRContractConfirmations() (uint16, bool) {
-	ret := _m.Called()
+// GlobalOCRContractConfirmations provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalOCRContractConfirmations(_a0 logger.Logger) (uint16, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 uint16
-	if rf, ok := ret.Get(0).(func() uint16); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint16); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint16)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -2238,20 +2275,20 @@ func (_m *ChainScopedConfig) GlobalOCRContractConfirmations() (uint16, bool) {
 	return r0, r1
 }
 
-// GlobalOCRContractTransmitterTransmitTimeout provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalOCRContractTransmitterTransmitTimeout() (time.Duration, bool) {
-	ret := _m.Called()
+// GlobalOCRContractTransmitterTransmitTimeout provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalOCRContractTransmitterTransmitTimeout(_a0 logger.Logger) (time.Duration, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -2259,20 +2296,20 @@ func (_m *ChainScopedConfig) GlobalOCRContractTransmitterTransmitTimeout() (time
 	return r0, r1
 }
 
-// GlobalOCRDatabaseTimeout provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalOCRDatabaseTimeout() (time.Duration, bool) {
-	ret := _m.Called()
+// GlobalOCRDatabaseTimeout provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalOCRDatabaseTimeout(_a0 logger.Logger) (time.Duration, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -2280,20 +2317,20 @@ func (_m *ChainScopedConfig) GlobalOCRDatabaseTimeout() (time.Duration, bool) {
 	return r0, r1
 }
 
-// GlobalOCRObservationGracePeriod provides a mock function with given fields:
-func (_m *ChainScopedConfig) GlobalOCRObservationGracePeriod() (time.Duration, bool) {
-	ret := _m.Called()
+// GlobalOCRObservationGracePeriod provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) GlobalOCRObservationGracePeriod(_a0 logger.Logger) (time.Duration, bool) {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
 
 	var r1 bool
-	if rf, ok := ret.Get(1).(func() bool); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) bool); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Get(1).(bool)
 	}
@@ -2301,13 +2338,13 @@ func (_m *ChainScopedConfig) GlobalOCRObservationGracePeriod() (time.Duration, b
 	return r0, r1
 }
 
-// HTTPServerWriteTimeout provides a mock function with given fields:
-func (_m *ChainScopedConfig) HTTPServerWriteTimeout() time.Duration {
-	ret := _m.Called()
+// HTTPServerWriteTimeout provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) HTTPServerWriteTimeout(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -2357,13 +2394,13 @@ func (_m *ChainScopedConfig) JSONConsole() bool {
 	return r0
 }
 
-// JobPipelineMaxRunDuration provides a mock function with given fields:
-func (_m *ChainScopedConfig) JobPipelineMaxRunDuration() time.Duration {
-	ret := _m.Called()
+// JobPipelineMaxRunDuration provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) JobPipelineMaxRunDuration(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -2371,13 +2408,13 @@ func (_m *ChainScopedConfig) JobPipelineMaxRunDuration() time.Duration {
 	return r0
 }
 
-// JobPipelineReaperInterval provides a mock function with given fields:
-func (_m *ChainScopedConfig) JobPipelineReaperInterval() time.Duration {
-	ret := _m.Called()
+// JobPipelineReaperInterval provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) JobPipelineReaperInterval(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -2385,13 +2422,13 @@ func (_m *ChainScopedConfig) JobPipelineReaperInterval() time.Duration {
 	return r0
 }
 
-// JobPipelineReaperThreshold provides a mock function with given fields:
-func (_m *ChainScopedConfig) JobPipelineReaperThreshold() time.Duration {
-	ret := _m.Called()
+// JobPipelineReaperThreshold provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) JobPipelineReaperThreshold(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -2399,13 +2436,13 @@ func (_m *ChainScopedConfig) JobPipelineReaperThreshold() time.Duration {
 	return r0
 }
 
-// JobPipelineResultWriteQueueDepth provides a mock function with given fields:
-func (_m *ChainScopedConfig) JobPipelineResultWriteQueueDepth() uint64 {
-	ret := _m.Called()
+// JobPipelineResultWriteQueueDepth provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) JobPipelineResultWriteQueueDepth(_a0 logger.Logger) uint64 {
+	ret := _m.Called(_a0)
 
 	var r0 uint64
-	if rf, ok := ret.Get(0).(func() uint64); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint64); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
@@ -2469,13 +2506,13 @@ func (_m *ChainScopedConfig) KeeperMaximumGracePeriod() int64 {
 	return r0
 }
 
-// KeeperRegistryCheckGasOverhead provides a mock function with given fields:
-func (_m *ChainScopedConfig) KeeperRegistryCheckGasOverhead() uint64 {
-	ret := _m.Called()
+// KeeperRegistryCheckGasOverhead provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) KeeperRegistryCheckGasOverhead(_a0 logger.Logger) uint64 {
+	ret := _m.Called(_a0)
 
 	var r0 uint64
-	if rf, ok := ret.Get(0).(func() uint64); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint64); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
@@ -2483,13 +2520,13 @@ func (_m *ChainScopedConfig) KeeperRegistryCheckGasOverhead() uint64 {
 	return r0
 }
 
-// KeeperRegistryPerformGasOverhead provides a mock function with given fields:
-func (_m *ChainScopedConfig) KeeperRegistryPerformGasOverhead() uint64 {
-	ret := _m.Called()
+// KeeperRegistryPerformGasOverhead provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) KeeperRegistryPerformGasOverhead(_a0 logger.Logger) uint64 {
+	ret := _m.Called(_a0)
 
 	var r0 uint64
-	if rf, ok := ret.Get(0).(func() uint64); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint64); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint64)
 	}
@@ -2497,13 +2534,13 @@ func (_m *ChainScopedConfig) KeeperRegistryPerformGasOverhead() uint64 {
 	return r0
 }
 
-// KeeperRegistrySyncInterval provides a mock function with given fields:
-func (_m *ChainScopedConfig) KeeperRegistrySyncInterval() time.Duration {
-	ret := _m.Called()
+// KeeperRegistrySyncInterval provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) KeeperRegistrySyncInterval(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -2511,13 +2548,13 @@ func (_m *ChainScopedConfig) KeeperRegistrySyncInterval() time.Duration {
 	return r0
 }
 
-// KeeperRegistrySyncUpkeepQueueSize provides a mock function with given fields:
-func (_m *ChainScopedConfig) KeeperRegistrySyncUpkeepQueueSize() uint32 {
-	ret := _m.Called()
+// KeeperRegistrySyncUpkeepQueueSize provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) KeeperRegistrySyncUpkeepQueueSize(_a0 logger.Logger) uint32 {
+	ret := _m.Called(_a0)
 
 	var r0 uint32
-	if rf, ok := ret.Get(0).(func() uint32); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint32); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint32)
 	}
@@ -2525,13 +2562,13 @@ func (_m *ChainScopedConfig) KeeperRegistrySyncUpkeepQueueSize() uint32 {
 	return r0
 }
 
-// KeyFile provides a mock function with given fields:
-func (_m *ChainScopedConfig) KeyFile() string {
-	ret := _m.Called()
+// KeyFile provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) KeyFile(_a0 logger.Logger) string {
+	ret := _m.Called(_a0)
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) string); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
@@ -2555,13 +2592,13 @@ func (_m *ChainScopedConfig) KeySpecificMaxGasPriceWei(addr common.Address) *big
 	return r0
 }
 
-// LeaseLockDuration provides a mock function with given fields:
-func (_m *ChainScopedConfig) LeaseLockDuration() time.Duration {
-	ret := _m.Called()
+// LeaseLockDuration provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) LeaseLockDuration(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -2569,13 +2606,13 @@ func (_m *ChainScopedConfig) LeaseLockDuration() time.Duration {
 	return r0
 }
 
-// LeaseLockRefreshInterval provides a mock function with given fields:
-func (_m *ChainScopedConfig) LeaseLockRefreshInterval() time.Duration {
-	ret := _m.Called()
+// LeaseLockRefreshInterval provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) LeaseLockRefreshInterval(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -2725,13 +2762,13 @@ func (_m *ChainScopedConfig) MinimumContractPayment() *assets.Link {
 	return r0
 }
 
-// OCR2BlockchainTimeout provides a mock function with given fields:
-func (_m *ChainScopedConfig) OCR2BlockchainTimeout() time.Duration {
-	ret := _m.Called()
+// OCR2BlockchainTimeout provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) OCR2BlockchainTimeout(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -2753,13 +2790,13 @@ func (_m *ChainScopedConfig) OCR2ContractConfirmations() uint16 {
 	return r0
 }
 
-// OCR2ContractPollInterval provides a mock function with given fields:
-func (_m *ChainScopedConfig) OCR2ContractPollInterval() time.Duration {
-	ret := _m.Called()
+// OCR2ContractPollInterval provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) OCR2ContractPollInterval(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -2767,13 +2804,13 @@ func (_m *ChainScopedConfig) OCR2ContractPollInterval() time.Duration {
 	return r0
 }
 
-// OCR2ContractSubscribeInterval provides a mock function with given fields:
-func (_m *ChainScopedConfig) OCR2ContractSubscribeInterval() time.Duration {
-	ret := _m.Called()
+// OCR2ContractSubscribeInterval provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) OCR2ContractSubscribeInterval(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -2781,13 +2818,13 @@ func (_m *ChainScopedConfig) OCR2ContractSubscribeInterval() time.Duration {
 	return r0
 }
 
-// OCR2ContractTransmitterTransmitTimeout provides a mock function with given fields:
-func (_m *ChainScopedConfig) OCR2ContractTransmitterTransmitTimeout() time.Duration {
-	ret := _m.Called()
+// OCR2ContractTransmitterTransmitTimeout provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) OCR2ContractTransmitterTransmitTimeout(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -2795,13 +2832,13 @@ func (_m *ChainScopedConfig) OCR2ContractTransmitterTransmitTimeout() time.Durat
 	return r0
 }
 
-// OCR2DatabaseTimeout provides a mock function with given fields:
-func (_m *ChainScopedConfig) OCR2DatabaseTimeout() time.Duration {
-	ret := _m.Called()
+// OCR2DatabaseTimeout provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) OCR2DatabaseTimeout(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -2858,13 +2895,13 @@ func (_m *ChainScopedConfig) OCR2TraceLogging() bool {
 	return r0
 }
 
-// OCRBlockchainTimeout provides a mock function with given fields:
-func (_m *ChainScopedConfig) OCRBlockchainTimeout() time.Duration {
-	ret := _m.Called()
+// OCRBlockchainTimeout provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) OCRBlockchainTimeout(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -2900,13 +2937,13 @@ func (_m *ChainScopedConfig) OCRContractConfirmations() uint16 {
 	return r0
 }
 
-// OCRContractPollInterval provides a mock function with given fields:
-func (_m *ChainScopedConfig) OCRContractPollInterval() time.Duration {
-	ret := _m.Called()
+// OCRContractPollInterval provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) OCRContractPollInterval(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -2914,13 +2951,13 @@ func (_m *ChainScopedConfig) OCRContractPollInterval() time.Duration {
 	return r0
 }
 
-// OCRContractSubscribeInterval provides a mock function with given fields:
-func (_m *ChainScopedConfig) OCRContractSubscribeInterval() time.Duration {
-	ret := _m.Called()
+// OCRContractSubscribeInterval provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) OCRContractSubscribeInterval(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -3061,13 +3098,13 @@ func (_m *ChainScopedConfig) OCRObservationGracePeriod() time.Duration {
 	return r0
 }
 
-// OCRObservationTimeout provides a mock function with given fields:
-func (_m *ChainScopedConfig) OCRObservationTimeout() time.Duration {
-	ret := _m.Called()
+// OCRObservationTimeout provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) OCRObservationTimeout(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -3138,13 +3175,13 @@ func (_m *ChainScopedConfig) OCRTransmitterAddress() (ethkey.EIP55Address, error
 	return r0, r1
 }
 
-// ORMMaxIdleConns provides a mock function with given fields:
-func (_m *ChainScopedConfig) ORMMaxIdleConns() int {
-	ret := _m.Called()
+// ORMMaxIdleConns provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) ORMMaxIdleConns(_a0 logger.Logger) int {
+	ret := _m.Called(_a0)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func() int); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) int); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
@@ -3152,13 +3189,13 @@ func (_m *ChainScopedConfig) ORMMaxIdleConns() int {
 	return r0
 }
 
-// ORMMaxOpenConns provides a mock function with given fields:
-func (_m *ChainScopedConfig) ORMMaxOpenConns() int {
-	ret := _m.Called()
+// ORMMaxOpenConns provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) ORMMaxOpenConns(_a0 logger.Logger) int {
+	ret := _m.Called(_a0)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func() int); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) int); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
@@ -3196,13 +3233,13 @@ func (_m *ChainScopedConfig) P2PAnnouncePort() uint16 {
 	return r0
 }
 
-// P2PBootstrapCheckInterval provides a mock function with given fields:
-func (_m *ChainScopedConfig) P2PBootstrapCheckInterval() time.Duration {
-	ret := _m.Called()
+// P2PBootstrapCheckInterval provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) P2PBootstrapCheckInterval(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -3247,13 +3284,13 @@ func (_m *ChainScopedConfig) P2PDHTAnnouncementCounterUserPrefix() uint32 {
 	return r0
 }
 
-// P2PDHTLookupInterval provides a mock function with given fields:
-func (_m *ChainScopedConfig) P2PDHTLookupInterval() int {
-	ret := _m.Called()
+// P2PDHTLookupInterval provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) P2PDHTLookupInterval(_a0 logger.Logger) int {
+	ret := _m.Called(_a0)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func() int); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) int); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
@@ -3261,13 +3298,13 @@ func (_m *ChainScopedConfig) P2PDHTLookupInterval() int {
 	return r0
 }
 
-// P2PIncomingMessageBufferSize provides a mock function with given fields:
-func (_m *ChainScopedConfig) P2PIncomingMessageBufferSize() int {
-	ret := _m.Called()
+// P2PIncomingMessageBufferSize provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) P2PIncomingMessageBufferSize(_a0 logger.Logger) int {
+	ret := _m.Called(_a0)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func() int); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) int); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
@@ -3275,13 +3312,13 @@ func (_m *ChainScopedConfig) P2PIncomingMessageBufferSize() int {
 	return r0
 }
 
-// P2PListenIP provides a mock function with given fields:
-func (_m *ChainScopedConfig) P2PListenIP() net.IP {
-	ret := _m.Called()
+// P2PListenIP provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) P2PListenIP(_a0 logger.Logger) net.IP {
+	ret := _m.Called(_a0)
 
 	var r0 net.IP
-	if rf, ok := ret.Get(0).(func() net.IP); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) net.IP); ok {
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(net.IP)
@@ -3320,7 +3357,7 @@ func (_m *ChainScopedConfig) P2PListenPortRaw() string {
 }
 
 // P2PNetworkingStack provides a mock function with given fields:
-func (_m *ChainScopedConfig) P2PNetworkingStack() networking.NetworkingStack {
+func (_m *ChainScopedConfig) P2PNetworkingStack() (networking.NetworkingStack, error) {
 	ret := _m.Called()
 
 	var r0 networking.NetworkingStack
@@ -3330,7 +3367,14 @@ func (_m *ChainScopedConfig) P2PNetworkingStack() networking.NetworkingStack {
 		r0 = ret.Get(0).(networking.NetworkingStack)
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // P2PNetworkingStackRaw provides a mock function with given fields:
@@ -3347,13 +3391,13 @@ func (_m *ChainScopedConfig) P2PNetworkingStackRaw() string {
 	return r0
 }
 
-// P2PNewStreamTimeout provides a mock function with given fields:
-func (_m *ChainScopedConfig) P2PNewStreamTimeout() time.Duration {
-	ret := _m.Called()
+// P2PNewStreamTimeout provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) P2PNewStreamTimeout(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -3361,13 +3405,13 @@ func (_m *ChainScopedConfig) P2PNewStreamTimeout() time.Duration {
 	return r0
 }
 
-// P2POutgoingMessageBufferSize provides a mock function with given fields:
-func (_m *ChainScopedConfig) P2POutgoingMessageBufferSize() int {
-	ret := _m.Called()
+// P2POutgoingMessageBufferSize provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) P2POutgoingMessageBufferSize(_a0 logger.Logger) int {
+	ret := _m.Called(_a0)
 
 	var r0 int
-	if rf, ok := ret.Get(0).(func() int); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) int); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(int)
 	}
@@ -3376,7 +3420,7 @@ func (_m *ChainScopedConfig) P2POutgoingMessageBufferSize() int {
 }
 
 // P2PPeerID provides a mock function with given fields:
-func (_m *ChainScopedConfig) P2PPeerID() p2pkey.PeerID {
+func (_m *ChainScopedConfig) P2PPeerID() (p2pkey.PeerID, error) {
 	ret := _m.Called()
 
 	var r0 p2pkey.PeerID
@@ -3386,7 +3430,14 @@ func (_m *ChainScopedConfig) P2PPeerID() p2pkey.PeerID {
 		r0 = ret.Get(0).(p2pkey.PeerID)
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // P2PPeerIDRaw provides a mock function with given fields:
@@ -3403,13 +3454,13 @@ func (_m *ChainScopedConfig) P2PPeerIDRaw() string {
 	return r0
 }
 
-// P2PPeerstoreWriteInterval provides a mock function with given fields:
-func (_m *ChainScopedConfig) P2PPeerstoreWriteInterval() time.Duration {
-	ret := _m.Called()
+// P2PPeerstoreWriteInterval provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) P2PPeerstoreWriteInterval(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -3434,7 +3485,7 @@ func (_m *ChainScopedConfig) P2PV2AnnounceAddresses() []string {
 }
 
 // P2PV2Bootstrappers provides a mock function with given fields:
-func (_m *ChainScopedConfig) P2PV2Bootstrappers() []commontypes.BootstrapperLocator {
+func (_m *ChainScopedConfig) P2PV2Bootstrappers() ([]commontypes.BootstrapperLocator, error) {
 	ret := _m.Called()
 
 	var r0 []commontypes.BootstrapperLocator
@@ -3446,7 +3497,14 @@ func (_m *ChainScopedConfig) P2PV2Bootstrappers() []commontypes.BootstrapperLoca
 		}
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }
 
 // P2PV2BootstrappersRaw provides a mock function with given fields:
@@ -3465,13 +3523,13 @@ func (_m *ChainScopedConfig) P2PV2BootstrappersRaw() []string {
 	return r0
 }
 
-// P2PV2DeltaDial provides a mock function with given fields:
-func (_m *ChainScopedConfig) P2PV2DeltaDial() models.Duration {
-	ret := _m.Called()
+// P2PV2DeltaDial provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) P2PV2DeltaDial(_a0 logger.Logger) models.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 models.Duration
-	if rf, ok := ret.Get(0).(func() models.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) models.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(models.Duration)
 	}
@@ -3479,13 +3537,13 @@ func (_m *ChainScopedConfig) P2PV2DeltaDial() models.Duration {
 	return r0
 }
 
-// P2PV2DeltaReconcile provides a mock function with given fields:
-func (_m *ChainScopedConfig) P2PV2DeltaReconcile() models.Duration {
-	ret := _m.Called()
+// P2PV2DeltaReconcile provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) P2PV2DeltaReconcile(_a0 logger.Logger) models.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 models.Duration
-	if rf, ok := ret.Get(0).(func() models.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) models.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(models.Duration)
 	}
@@ -3523,13 +3581,13 @@ func (_m *ChainScopedConfig) PersistedConfig() types.ChainCfg {
 	return r0
 }
 
-// Port provides a mock function with given fields:
-func (_m *ChainScopedConfig) Port() uint16 {
-	ret := _m.Called()
+// Port provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) Port(_a0 logger.Logger) uint16 {
+	ret := _m.Called(_a0)
 
 	var r0 uint16
-	if rf, ok := ret.Get(0).(func() uint16); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint16); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint16)
 	}
@@ -3565,13 +3623,13 @@ func (_m *ChainScopedConfig) RPOrigin() string {
 	return r0
 }
 
-// ReaperExpiration provides a mock function with given fields:
-func (_m *ChainScopedConfig) ReaperExpiration() models.Duration {
-	ret := _m.Called()
+// ReaperExpiration provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) ReaperExpiration(_a0 logger.Logger) models.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 models.Duration
-	if rf, ok := ret.Get(0).(func() models.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) models.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(models.Duration)
 	}
@@ -3593,13 +3651,13 @@ func (_m *ChainScopedConfig) ReplayFromBlock() int64 {
 	return r0
 }
 
-// RootDir provides a mock function with given fields:
-func (_m *ChainScopedConfig) RootDir() string {
-	ret := _m.Called()
+// RootDir provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) RootDir(_a0 logger.Logger) string {
+	ret := _m.Called(_a0)
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) string); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
@@ -3635,13 +3693,13 @@ func (_m *ChainScopedConfig) SessionOptions() sessions.Options {
 	return r0
 }
 
-// SessionSecret provides a mock function with given fields:
-func (_m *ChainScopedConfig) SessionSecret() ([]byte, error) {
-	ret := _m.Called()
+// SessionSecret provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) SessionSecret(_a0 logger.Logger) ([]byte, error) {
+	ret := _m.Called(_a0)
 
 	var r0 []byte
-	if rf, ok := ret.Get(0).(func() []byte); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) []byte); ok {
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).([]byte)
@@ -3649,8 +3707,8 @@ func (_m *ChainScopedConfig) SessionSecret() ([]byte, error) {
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func() error); ok {
-		r1 = rf()
+	if rf, ok := ret.Get(1).(func(logger.Logger) error); ok {
+		r1 = rf(_a0)
 	} else {
 		r1 = ret.Error(1)
 	}
@@ -3658,23 +3716,18 @@ func (_m *ChainScopedConfig) SessionSecret() ([]byte, error) {
 	return r0, r1
 }
 
-// SessionTimeout provides a mock function with given fields:
-func (_m *ChainScopedConfig) SessionTimeout() models.Duration {
-	ret := _m.Called()
+// SessionTimeout provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) SessionTimeout(_a0 logger.Logger) models.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 models.Duration
-	if rf, ok := ret.Get(0).(func() models.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) models.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(models.Duration)
 	}
 
 	return r0
-}
-
-// SetDialect provides a mock function with given fields: _a0
-func (_m *ChainScopedConfig) SetDialect(_a0 dialects.DialectName) {
-	_m.Called(_a0)
 }
 
 // SetEvmGasPriceDefault provides a mock function with given fields: value
@@ -3710,13 +3763,13 @@ func (_m *ChainScopedConfig) SetLogSQL(logSQL bool) {
 	_m.Called(logSQL)
 }
 
-// StatsPusherLogging provides a mock function with given fields:
-func (_m *ChainScopedConfig) StatsPusherLogging() bool {
-	ret := _m.Called()
+// StatsPusherLogging provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) StatsPusherLogging(_a0 logger.Logger) bool {
+	ret := _m.Called(_a0)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) bool); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
@@ -3738,13 +3791,13 @@ func (_m *ChainScopedConfig) TLSCertPath() string {
 	return r0
 }
 
-// TLSDir provides a mock function with given fields:
-func (_m *ChainScopedConfig) TLSDir() string {
-	ret := _m.Called()
+// TLSDir provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) TLSDir(_a0 logger.Logger) string {
+	ret := _m.Called(_a0)
 
 	var r0 string
-	if rf, ok := ret.Get(0).(func() string); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) string); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(string)
 	}
@@ -3780,13 +3833,13 @@ func (_m *ChainScopedConfig) TLSKeyPath() string {
 	return r0
 }
 
-// TLSPort provides a mock function with given fields:
-func (_m *ChainScopedConfig) TLSPort() uint16 {
-	ret := _m.Called()
+// TLSPort provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) TLSPort(_a0 logger.Logger) uint16 {
+	ret := _m.Called(_a0)
 
 	var r0 uint16
-	if rf, ok := ret.Get(0).(func() uint16); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) uint16); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(uint16)
 	}
@@ -3808,13 +3861,13 @@ func (_m *ChainScopedConfig) TLSRedirect() bool {
 	return r0
 }
 
-// TelemetryIngressLogging provides a mock function with given fields:
-func (_m *ChainScopedConfig) TelemetryIngressLogging() bool {
-	ret := _m.Called()
+// TelemetryIngressLogging provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) TelemetryIngressLogging(_a0 logger.Logger) bool {
+	ret := _m.Called(_a0)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) bool); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
@@ -3836,13 +3889,13 @@ func (_m *ChainScopedConfig) TelemetryIngressServerPubKey() string {
 	return r0
 }
 
-// TelemetryIngressURL provides a mock function with given fields:
-func (_m *ChainScopedConfig) TelemetryIngressURL() *url.URL {
-	ret := _m.Called()
+// TelemetryIngressURL provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) TelemetryIngressURL(_a0 logger.Logger) *url.URL {
+	ret := _m.Called(_a0)
 
 	var r0 *url.URL
-	if rf, ok := ret.Get(0).(func() *url.URL); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) *url.URL); ok {
+		r0 = rf(_a0)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*url.URL)
@@ -3852,13 +3905,13 @@ func (_m *ChainScopedConfig) TelemetryIngressURL() *url.URL {
 	return r0
 }
 
-// TriggerFallbackDBPollInterval provides a mock function with given fields:
-func (_m *ChainScopedConfig) TriggerFallbackDBPollInterval() time.Duration {
-	ret := _m.Called()
+// TriggerFallbackDBPollInterval provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) TriggerFallbackDBPollInterval(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -3880,13 +3933,13 @@ func (_m *ChainScopedConfig) UnAuthenticatedRateLimit() int64 {
 	return r0
 }
 
-// UnAuthenticatedRateLimitPeriod provides a mock function with given fields:
-func (_m *ChainScopedConfig) UnAuthenticatedRateLimitPeriod() models.Duration {
-	ret := _m.Called()
+// UnAuthenticatedRateLimitPeriod provides a mock function with given fields: _a0
+func (_m *ChainScopedConfig) UnAuthenticatedRateLimitPeriod(_a0 logger.Logger) models.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 models.Duration
-	if rf, ok := ret.Get(0).(func() models.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) models.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(models.Duration)
 	}
@@ -3909,15 +3962,24 @@ func (_m *ChainScopedConfig) UseLegacyEthEnvVars() bool {
 }
 
 // Validate provides a mock function with given fields:
-func (_m *ChainScopedConfig) Validate() error {
+func (_m *ChainScopedConfig) Validate() ([]string, error) {
 	ret := _m.Called()
 
-	var r0 error
-	if rf, ok := ret.Get(0).(func() error); ok {
+	var r0 []string
+	if rf, ok := ret.Get(0).(func() []string); ok {
 		r0 = rf()
 	} else {
-		r0 = ret.Error(0)
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]string)
+		}
 	}
 
-	return r0
+	var r1 error
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
 }

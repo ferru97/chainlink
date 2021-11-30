@@ -85,7 +85,7 @@ func (t *BridgeTask) Run(ctx context.Context, lggr logger.Logger, vars Vars, inp
 	}
 
 	if t.Async == "true" {
-		responseURL := t.config.BridgeResponseURL()
+		responseURL := t.config.BridgeResponseURL(nil)
 		if *responseURL != *zeroURL {
 			responseURL.Path = path.Join(responseURL.Path, "/v2/resume/", t.uuid.String())
 		}

@@ -3,6 +3,8 @@ package configtest
 import (
 	"time"
 
+	"github.com/smartcontractkit/chainlink/core/logger"
+
 	"github.com/smartcontractkit/chainlink/core/config"
 )
 
@@ -22,9 +24,9 @@ func (c *TestGeneralConfig) P2PBootstrapPeers() ([]string, error) {
 	return c.GeneralConfig.P2PBootstrapPeers()
 }
 
-func (c *TestGeneralConfig) P2PBootstrapCheckInterval() time.Duration {
+func (c *TestGeneralConfig) P2PBootstrapCheckInterval(lggr logger.L) time.Duration {
 	if c.Overrides.P2PBootstrapCheckInterval != nil {
 		return *c.Overrides.P2PBootstrapCheckInterval
 	}
-	return c.GeneralConfig.P2PBootstrapCheckInterval()
+	return c.GeneralConfig.P2PBootstrapCheckInterval(lggr)
 }

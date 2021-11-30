@@ -13,56 +13,64 @@ import (
 )
 
 func TestGeneralConfig_Defaults(t *testing.T) {
-	config := NewGeneralConfig()
-	assert.Equal(t, uint64(10), config.BlockBackfillDepth())
-	assert.Equal(t, new(url.URL), config.BridgeResponseURL())
-	assert.Nil(t, config.DefaultChainID())
+	config, warns, err := NewGeneralConfig()
+	require.NoError(t, err)
+	assert.Len(t, warns, 1)
+	assert.Equal(t, uint64(10), config.BlockBackfillDepth(nil))
+	assert.Equal(t, new(url.URL), config.BridgeResponseURL(nil))
+	chainID, err := config.DefaultChainID()
+	require.NoError(t, err)
+	require.Nil(t, chainID)
 	assert.Equal(t, false, config.EthereumDisabled())
 	assert.Equal(t, false, config.FeatureExternalInitiators())
-	assert.Equal(t, 15*time.Minute, config.SessionTimeout().Duration())
+	assert.Equal(t, 15*time.Minute, config.SessionTimeout(nil).Duration())
 }
 
 func TestGeneralConfig_GlobalOCRDatabaseTimeout(t *testing.T) {
 	t.Setenv(EnvVarName("OCRDatabaseTimeout"), "3s")
-	config := NewGeneralConfig()
+	config, warns, err := NewGeneralConfig()
+	require.NoError(t, err)
+	assert.Len(t, warns, 1)
 
-	timeout, ok := config.GlobalOCRDatabaseTimeout()
+	timeout, ok := config.GlobalOCRDatabaseTimeout(nil)
 	require.True(t, ok)
 	require.Equal(t, 3*time.Second, timeout)
 }
 
 func TestGeneralConfig_GlobalOCRObservationGracePeriod(t *testing.T) {
 	t.Setenv(EnvVarName("OCRObservationGracePeriod"), "3s")
-	config := NewGeneralConfig()
+	config, warns, err := NewGeneralConfig()
+	require.NoError(t, err)
+	assert.Len(t, warns, 1)
 
-	timeout, ok := config.GlobalOCRObservationGracePeriod()
+	timeout, ok := config.GlobalOCRObservationGracePeriod(nil)
 	require.True(t, ok)
 	require.Equal(t, 3*time.Second, timeout)
 }
 
 func TestGeneralConfig_GlobalOCRContractTransmitterTransmitTimeout(t *testing.T) {
 	t.Setenv(EnvVarName("OCRContractTransmitterTransmitTimeout"), "3s")
-	config := NewGeneralConfig()
+	config, warns, err := NewGeneralConfig()
+	require.NoError(t, err)
+	assert.Len(t, warns, 1)
 
-	timeout, ok := config.GlobalOCRContractTransmitterTransmitTimeout()
+	timeout, ok := config.GlobalOCRContractTransmitterTransmitTimeout(nil)
 	require.True(t, ok)
 	require.Equal(t, 3*time.Second, timeout)
 }
 
 func TestGeneralConfig_sessionSecret(t *testing.T) {
 	t.Parallel()
-	config := NewGeneralConfig()
-	// config.Set("ROOT", path.Join("/tmp/chainlink_test", "TestConfig_sessionSecret"))
-	// err := os.MkdirAll(config.RootDir(), os.FileMode(0770))
-	// require.NoError(t, err)
-	// defer os.RemoveAll(config.RootDir())
+	config, warns, err := NewGeneralConfig()
+	require.NoError(t, err)
+	assert.Len(t, warns, 1)
 
-	initial, err := config.SessionSecret()
+	initial, err := config.SessionSecret(nil)
 	require.NoError(t, err)
 	require.NotEqual(t, "", initial)
 	require.NotEqual(t, "clsession_test_secret", initial)
 
-	second, err := config.SessionSecret()
+	second, err := config.SessionSecret(nil)
 	require.NoError(t, err)
 	require.Equal(t, initial, second)
 }
@@ -71,10 +79,12 @@ func TestConfig_readFromFile(t *testing.T) {
 	v := viper.New()
 	v.Set("ROOT", "../../tools/clroot/")
 
-	config := newGeneralConfigWithViper(v)
-	assert.Equal(t, config.RootDir(), "../../tools/clroot/")
+	config, warns, err := newGeneralConfigWithViper(v)
+	require.NoError(t, err)
+	assert.Len(t, warns, 1)
+	assert.Equal(t, config.RootDir(nil), "../../tools/clroot/")
 	assert.Equal(t, config.Dev(), true)
-	assert.Equal(t, config.TLSPort(), uint16(0))
+	assert.Equal(t, config.TLSPort(nil), uint16(0))
 }
 
 func TestStore_bigIntParser(t *testing.T) {

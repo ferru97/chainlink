@@ -1,37 +1,36 @@
 package offchainreporting
 
 import (
-	"math/big"
 	"time"
 
 	"github.com/multiformats/go-multiaddr"
 	"github.com/pelletier/go-toml"
 	"github.com/pkg/errors"
-	"github.com/smartcontractkit/chainlink/core/chains"
-	"github.com/smartcontractkit/libocr/offchainreporting"
 	"go.uber.org/multierr"
 
+	"github.com/smartcontractkit/chainlink/core/chains"
 	"github.com/smartcontractkit/chainlink/core/chains/evm"
+	"github.com/smartcontractkit/chainlink/core/logger"
 	"github.com/smartcontractkit/chainlink/core/services/job"
 	"github.com/smartcontractkit/chainlink/core/services/keystore/keys/ethkey"
 	"github.com/smartcontractkit/chainlink/core/services/keystore/keys/p2pkey"
+	"github.com/smartcontractkit/libocr/offchainreporting"
 )
 
 type ValidationConfig interface {
-	ChainID() *big.Int
 	ChainType() chains.ChainType
 	Dev() bool
-	OCRBlockchainTimeout() time.Duration
+	OCRBlockchainTimeout(logger.L) time.Duration
 	OCRContractConfirmations() uint16
-	OCRContractPollInterval() time.Duration
-	OCRContractSubscribeInterval() time.Duration
+	OCRContractPollInterval(logger.L) time.Duration
+	OCRContractSubscribeInterval(logger.L) time.Duration
 	OCRContractTransmitterTransmitTimeout() time.Duration
 	OCRDatabaseTimeout() time.Duration
 	OCRKeyBundleID() (string, error)
 	OCRObservationGracePeriod() time.Duration
-	OCRObservationTimeout() time.Duration
+	OCRObservationTimeout(logger.L) time.Duration
 	OCRTransmitterAddress() (ethkey.EIP55Address, error)
-	P2PPeerID() p2pkey.PeerID
+	P2PPeerID() (p2pkey.PeerID, error)
 }
 
 // ValidatedOracleSpecToml validates an oracle spec that came from TOML
@@ -110,7 +109,7 @@ func cloneSet(in map[string]struct{}) map[string]struct{} {
 }
 
 func validateTimingParameters(cfg ValidationConfig, spec job.OffchainReportingOracleSpec) error {
-	lc := NewLocalConfig(cfg, spec)
+	lc := NewLocalConfig(cfg, spec, nil)
 	return errors.Wrap(offchainreporting.SanityCheckLocalConfig(lc), "offchainreporting.SanityCheckLocalConfig failed")
 }
 
@@ -137,7 +136,7 @@ func validateNonBootstrapSpec(tree *toml.Tree, config ValidationConfig, spec job
 	if spec.OffchainreportingOracleSpec.ObservationTimeout != 0 {
 		observationTimeout = spec.OffchainreportingOracleSpec.ObservationTimeout.Duration()
 	} else {
-		observationTimeout = config.OCRObservationTimeout()
+		observationTimeout = config.OCRObservationTimeout(nil)
 	}
 	if time.Duration(spec.MaxTaskDuration) > observationTimeout {
 		return errors.Errorf("max task duration must be < observation timeout")

@@ -89,7 +89,7 @@ func TestTerminalCookieAuthenticator_AuthenticateWithSession(t *testing.T) {
 
 type diskCookieStoreConfig struct{ rootdir string }
 
-func (d diskCookieStoreConfig) RootDir() string {
+func (d diskCookieStoreConfig) RootDir(logger.Logger) string {
 	return d.rootdir
 }
 

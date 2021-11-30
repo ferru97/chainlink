@@ -1,7 +1,7 @@
 package config
 
 func (c *chainScopedConfig) OCR2ContractConfirmations() uint16 {
-	val, ok := c.GeneralConfig.GlobalOCR2ContractConfirmations()
+	val, ok := c.GeneralConfig.GlobalOCR2ContractConfirmations(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("OCR2ContractConfirmations", val)
 		return val

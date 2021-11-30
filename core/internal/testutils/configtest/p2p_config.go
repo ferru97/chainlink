@@ -8,16 +8,16 @@ import (
 
 var _ config.P2PNetworking = &TestGeneralConfig{}
 
-func (c *TestGeneralConfig) P2PNetworkingStack() ocrnetworking.NetworkingStack {
+func (c *TestGeneralConfig) P2PNetworkingStack() (ocrnetworking.NetworkingStack, error) {
 	if c.Overrides.P2PNetworkingStack != 0 {
-		return c.Overrides.P2PNetworkingStack
+		return c.Overrides.P2PNetworkingStack, nil
 	}
 	return c.GeneralConfig.P2PNetworkingStack()
 }
 
-func (c *TestGeneralConfig) P2PPeerID() p2pkey.PeerID {
+func (c *TestGeneralConfig) P2PPeerID() (p2pkey.PeerID, error) {
 	if c.Overrides.P2PPeerID.String() != "" {
-		return c.Overrides.P2PPeerID
+		return c.Overrides.P2PPeerID, nil
 	}
-	return ""
+	return "", nil
 }

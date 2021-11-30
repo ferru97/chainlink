@@ -47,7 +47,7 @@ type Config interface {
 	EvmNonceAutoSync() bool
 	EvmRPCDefaultBatchSize() uint32
 	KeySpecificMaxGasPriceWei(addr common.Address) *big.Int
-	TriggerFallbackDBPollInterval() time.Duration
+	TriggerFallbackDBPollInterval(logger.L) time.Duration
 	LogSQL() bool
 }
 

@@ -3,6 +3,8 @@ package config
 import (
 	"time"
 
+	"github.com/smartcontractkit/chainlink/core/logger"
+
 	"github.com/pkg/errors"
 	"github.com/smartcontractkit/chainlink/core/services/keystore/keys/ethkey"
 	"github.com/smartcontractkit/chainlink/core/store/models"
@@ -10,16 +12,16 @@ import (
 
 type OCR1Config interface {
 	// OCR1 config, can override in jobs, only ethereum.
-	GlobalOCRContractConfirmations() (uint16, bool)
-	GlobalOCRContractTransmitterTransmitTimeout() (time.Duration, bool)
-	GlobalOCRDatabaseTimeout() (time.Duration, bool)
-	GlobalOCRObservationGracePeriod() (time.Duration, bool)
-	OCRBlockchainTimeout() time.Duration
-	OCRContractPollInterval() time.Duration
-	OCRContractSubscribeInterval() time.Duration
+	GlobalOCRContractConfirmations(logger.L) (uint16, bool)
+	GlobalOCRContractTransmitterTransmitTimeout(logger.L) (time.Duration, bool)
+	GlobalOCRDatabaseTimeout(logger.L) (time.Duration, bool)
+	GlobalOCRObservationGracePeriod(logger.L) (time.Duration, bool)
+	OCRBlockchainTimeout(logger.L) time.Duration
+	OCRContractPollInterval(logger.L) time.Duration
+	OCRContractSubscribeInterval(logger.L) time.Duration
 	OCRMonitoringEndpoint() string
 	OCRKeyBundleID() (string, error)
-	OCRObservationTimeout() time.Duration
+	OCRObservationTimeout(logger.L) time.Duration
 	OCRSimulateTransactions() bool
 	OCRTransmitterAddress() (ethkey.EIP55Address, error) // OCR2 can support non-evm changes
 	// OCR1 config, cannot override in jobs
@@ -27,52 +29,52 @@ type OCR1Config interface {
 	OCRDefaultTransactionQueueDepth() uint32
 }
 
-func (c *generalConfig) getDuration(field string) time.Duration {
-	return c.getWithFallback(field, ParseDuration).(time.Duration)
+func (c *generalConfig) getDuration(field string, lggr logger.L) time.Duration {
+	return c.getWithFallback(field, ParseDuration, lggr).(time.Duration)
 }
 
-func (c *generalConfig) GlobalOCRContractConfirmations() (uint16, bool) {
-	val, ok := lookupEnv(EnvVarName("OCRContractConfirmations"), ParseUint16)
+func (c *generalConfig) GlobalOCRContractConfirmations(lggr logger.L) (uint16, bool) {
+	val, ok := lookupEnv(EnvVarName("OCRContractConfirmations"), ParseUint16, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint16), ok
 }
 
-func (c *generalConfig) GlobalOCRObservationGracePeriod() (time.Duration, bool) {
-	val, ok := lookupEnv(EnvVarName("OCRObservationGracePeriod"), ParseDuration)
+func (c *generalConfig) GlobalOCRObservationGracePeriod(lggr logger.L) (time.Duration, bool) {
+	val, ok := lookupEnv(EnvVarName("OCRObservationGracePeriod"), ParseDuration, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(time.Duration), ok
 }
 
-func (c *generalConfig) GlobalOCRContractTransmitterTransmitTimeout() (time.Duration, bool) {
-	val, ok := lookupEnv(EnvVarName("OCRContractTransmitterTransmitTimeout"), ParseDuration)
+func (c *generalConfig) GlobalOCRContractTransmitterTransmitTimeout(lggr logger.L) (time.Duration, bool) {
+	val, ok := lookupEnv(EnvVarName("OCRContractTransmitterTransmitTimeout"), ParseDuration, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(time.Duration), ok
 }
 
-func (c *generalConfig) GlobalOCRDatabaseTimeout() (time.Duration, bool) {
-	val, ok := lookupEnv(EnvVarName("OCRDatabaseTimeout"), ParseDuration)
+func (c *generalConfig) GlobalOCRDatabaseTimeout(lggr logger.L) (time.Duration, bool) {
+	val, ok := lookupEnv(EnvVarName("OCRDatabaseTimeout"), ParseDuration, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(time.Duration), ok
 }
 
-func (c *generalConfig) OCRContractPollInterval() time.Duration {
-	return c.getDuration("OCRContractPollInterval")
+func (c *generalConfig) OCRContractPollInterval(lggr logger.L) time.Duration {
+	return c.getDuration("OCRContractPollInterval", lggr)
 }
 
-func (c *generalConfig) OCRContractSubscribeInterval() time.Duration {
-	return c.getDuration("OCRContractSubscribeInterval")
+func (c *generalConfig) OCRContractSubscribeInterval(lggr logger.L) time.Duration {
+	return c.getDuration("OCRContractSubscribeInterval", lggr)
 }
 
-func (c *generalConfig) OCRBlockchainTimeout() time.Duration {
-	return c.getDuration("OCRBlockchainTimeout")
+func (c *generalConfig) OCRBlockchainTimeout(lggr logger.L) time.Duration {
+	return c.getDuration("OCRBlockchainTimeout", lggr)
 }
 
 func (c *generalConfig) OCRMonitoringEndpoint() string {
@@ -102,8 +104,8 @@ func (c *generalConfig) OCRTraceLogging() bool {
 	return c.viper.GetBool(EnvVarName("OCRTraceLogging"))
 }
 
-func (c *generalConfig) OCRObservationTimeout() time.Duration {
-	return c.getDuration("OCRObservationTimeout")
+func (c *generalConfig) OCRObservationTimeout(lggr logger.L) time.Duration {
+	return c.getDuration("OCRObservationTimeout", lggr)
 }
 
 // OCRSimulateTransactions enables using eth_call transaction simulation before

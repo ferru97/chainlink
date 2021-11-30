@@ -585,7 +585,7 @@ func (s *service) generateJob(spec string) (*job.Job, error) {
 	var js job.Job
 	switch jobType {
 	case job.OffchainReporting:
-		if !s.cfg.Dev() && !s.cfg.FeatureOffchainReporting() {
+		if !s.cfg.Dev() && !s.cfg.FeatureOffchainReporting(s.lggr) {
 			return nil, ErrOCRDisabled
 		}
 		js, err = offchainreporting.ValidatedOracleSpecToml(s.chainSet, spec)

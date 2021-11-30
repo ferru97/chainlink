@@ -3,6 +3,8 @@ package configtest
 import (
 	"time"
 
+	"github.com/smartcontractkit/chainlink/core/logger"
+
 	"github.com/smartcontractkit/chainlink/core/config"
 	"github.com/smartcontractkit/chainlink/core/services/keystore/keys/ethkey"
 )
@@ -20,7 +22,7 @@ func (c *TestGeneralConfig) OCRDatabaseTimeout() time.Duration {
 	if c.Overrides.OCRDatabaseTimeout != nil {
 		return *c.Overrides.OCRDatabaseTimeout
 	}
-	v, ok := c.GeneralConfig.GlobalOCRDatabaseTimeout()
+	v, ok := c.GeneralConfig.GlobalOCRDatabaseTimeout(nil)
 	if !ok {
 		return 1 * time.Second
 	}
@@ -31,18 +33,18 @@ func (c *TestGeneralConfig) OCRObservationGracePeriod() time.Duration {
 	if c.Overrides.OCRObservationGracePeriod != nil {
 		return *c.Overrides.OCRObservationGracePeriod
 	}
-	v, ok := c.GeneralConfig.GlobalOCRObservationGracePeriod()
+	v, ok := c.GeneralConfig.GlobalOCRObservationGracePeriod(nil)
 	if !ok {
 		return 100 * time.Millisecond
 	}
 	return v
 }
 
-func (c *TestGeneralConfig) OCRObservationTimeout() time.Duration {
+func (c *TestGeneralConfig) OCRObservationTimeout(lggr logger.L) time.Duration {
 	if c.Overrides.OCRObservationTimeout != nil {
 		return *c.Overrides.OCRObservationTimeout
 	}
-	return c.GeneralConfig.OCRObservationTimeout()
+	return c.GeneralConfig.OCRObservationTimeout(lggr)
 }
 
 func (c *TestGeneralConfig) OCRTransmitterAddress() (ethkey.EIP55Address, error) {

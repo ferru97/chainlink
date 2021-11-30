@@ -43,7 +43,7 @@ import (
 func Router(app chainlink.Application, prometheus *ginprom.Prometheus) *gin.Engine {
 	engine := gin.New()
 	config := app.GetConfig()
-	secret, err := config.SessionSecret()
+	secret, err := config.SessionSecret(app.GetLogger())
 	if err != nil {
 		app.GetLogger().Panic(err)
 	}
@@ -66,10 +66,11 @@ func Router(app chainlink.Application, prometheus *ginprom.Prometheus) *gin.Engi
 	}
 	engine.Use(helmet.Default())
 
+	lggr := app.GetLogger()
 	api := engine.Group(
 		"/",
 		rateLimiter(
-			config.AuthenticatedRateLimitPeriod().Duration(),
+			config.AuthenticatedRateLimitPeriod(lggr).Duration(),
 			config.AuthenticatedRateLimit(),
 		),
 		sessions.Sessions(auth.SessionName, sessionStore),
@@ -80,7 +81,7 @@ func Router(app chainlink.Application, prometheus *ginprom.Prometheus) *gin.Engi
 	sessionRoutes(app, api)
 	v2Routes(app, api)
 
-	guiAssetRoutes(engine, config, app.GetLogger())
+	guiAssetRoutes(engine, config, lggr)
 
 	api.POST("/query",
 		auth.AuthenticateGQL(app.SessionORM()),
@@ -200,7 +201,7 @@ func pprofHandler(h http.HandlerFunc) gin.HandlerFunc {
 func sessionRoutes(app chainlink.Application, r *gin.RouterGroup) {
 	config := app.GetConfig()
 	unauth := r.Group("/", rateLimiter(
-		config.UnAuthenticatedRateLimitPeriod().Duration(),
+		config.UnAuthenticatedRateLimitPeriod(app.GetLogger()).Duration(),
 		config.UnAuthenticatedRateLimit(),
 	))
 	sc := NewSessionsController(app)

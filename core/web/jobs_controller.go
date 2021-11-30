@@ -108,13 +108,13 @@ func (jc *JobsController) Create(c *gin.Context) {
 	switch jobType {
 	case job.OffchainReporting:
 		jb, err = offchainreporting.ValidatedOracleSpecToml(jc.App.GetChainSet(), request.TOML)
-		if !config.Dev() && !config.FeatureOffchainReporting() {
+		if !config.Dev() && !config.FeatureOffchainReporting(jc.App.GetLogger()) {
 			jsonAPIError(c, http.StatusNotImplemented, errors.New("The Offchain Reporting feature is disabled by configuration"))
 			return
 		}
 	case job.OffchainReporting2:
 		jb, err = offchainreporting2.ValidatedOracleSpecToml(jc.App.GetChainSet(), request.TOML)
-		if !config.Dev() && !config.FeatureOffchainReporting2() {
+		if !config.Dev() && !config.FeatureOffchainReporting2(jc.App.GetLogger()) {
 			jsonAPIError(c, http.StatusNotImplemented, errors.New("The Offchain Reporting 2 feature is disabled by configuration"))
 			return
 		}

@@ -1,9 +1,6 @@
 package config
 
 import (
-	"crypto/rand"
-	"fmt"
-	"math/big"
 	"net"
 	"time"
 
@@ -16,17 +13,17 @@ type P2PV1Networking interface {
 	P2PAnnouncePort() uint16
 	P2PBootstrapPeers() ([]string, error)
 	P2PDHTAnnouncementCounterUserPrefix() uint32
-	P2PListenIP() net.IP
+	P2PListenIP(logger.L) net.IP
 	P2PListenPort() uint16
 	P2PListenPortRaw() string
-	P2PNewStreamTimeout() time.Duration
-	P2PBootstrapCheckInterval() time.Duration
-	P2PDHTLookupInterval() int
-	P2PPeerstoreWriteInterval() time.Duration
+	P2PNewStreamTimeout(logger.L) time.Duration
+	P2PBootstrapCheckInterval(logger.L) time.Duration
+	P2PDHTLookupInterval(logger.L) int
+	P2PPeerstoreWriteInterval(logger.L) time.Duration
 }
 
-func (c *generalConfig) P2PPeerstoreWriteInterval() time.Duration {
-	return c.getWithFallback("P2PPeerstoreWriteInterval", ParseDuration).(time.Duration)
+func (c *generalConfig) P2PPeerstoreWriteInterval(lggr logger.L) time.Duration {
+	return c.getWithFallback("P2PPeerstoreWriteInterval", ParseDuration, lggr).(time.Duration)
 }
 
 func (c *generalConfig) P2PBootstrapPeers() ([]string, error) {
@@ -41,8 +38,8 @@ func (c *generalConfig) P2PBootstrapPeers() ([]string, error) {
 }
 
 // P2PListenIP is the ip that libp2p willl bind to and listen on
-func (c *generalConfig) P2PListenIP() net.IP {
-	return c.getWithFallback("P2PListenIP", ParseIP).(net.IP)
+func (c *generalConfig) P2PListenIP(lggr logger.L) net.IP {
+	return c.getWithFallback("P2PListenIP", ParseIP, lggr).(net.IP)
 }
 
 // P2PListenPort is the port that libp2p will bind to and listen on
@@ -50,26 +47,6 @@ func (c *generalConfig) P2PListenPort() uint16 {
 	if c.viper.IsSet(EnvVarName("P2PListenPort")) {
 		return uint16(c.viper.GetUint32(EnvVarName("P2PListenPort")))
 	}
-	// Fast path in case it was already set
-	c.randomP2PPortMtx.RLock()
-	if c.randomP2PPort > 0 {
-		c.randomP2PPortMtx.RUnlock()
-		return c.randomP2PPort
-	}
-	c.randomP2PPortMtx.RUnlock()
-	// Path for initial set
-	c.randomP2PPortMtx.Lock()
-	defer c.randomP2PPortMtx.Unlock()
-	if c.randomP2PPort > 0 {
-		return c.randomP2PPort
-	}
-	r, err := rand.Int(rand.Reader, big.NewInt(65535-1023))
-	if err != nil {
-		panic(fmt.Errorf("unexpected error generating random port: %w", err))
-	}
-	randPort := uint16(r.Int64() + 1024)
-	logger.Warnw(fmt.Sprintf("P2P_LISTEN_PORT was not set, listening on random port %d. A new random port will be generated on every boot, for stability it is recommended to set P2P_LISTEN_PORT to a fixed value in your environment", randPort), "p2pPort", randPort)
-	c.randomP2PPort = randPort
 	return c.randomP2PPort
 }
 
@@ -104,23 +81,23 @@ func (c *generalConfig) P2PDHTAnnouncementCounterUserPrefix() uint32 {
 }
 
 // FIXME: Add comments to all of these
-func (c *generalConfig) P2PBootstrapCheckInterval() time.Duration {
+func (c *generalConfig) P2PBootstrapCheckInterval(lggr logger.L) time.Duration {
 	if c.OCRBootstrapCheckInterval() != 0 {
 		return c.OCRBootstrapCheckInterval()
 	}
-	return c.getWithFallback("P2PBootstrapCheckInterval", ParseDuration).(time.Duration)
+	return c.getWithFallback("P2PBootstrapCheckInterval", ParseDuration, lggr).(time.Duration)
 }
 
-func (c *generalConfig) P2PDHTLookupInterval() int {
+func (c *generalConfig) P2PDHTLookupInterval(lggr logger.L) int {
 	if c.OCRDHTLookupInterval() != 0 {
 		return c.OCRDHTLookupInterval()
 	}
-	return int(c.getWithFallback("P2PDHTLookupInterval", ParseUint16).(uint16))
+	return int(c.getWithFallback("P2PDHTLookupInterval", ParseUint16, lggr).(uint16))
 }
 
-func (c *generalConfig) P2PNewStreamTimeout() time.Duration {
+func (c *generalConfig) P2PNewStreamTimeout(lggr logger.L) time.Duration {
 	if c.OCRNewStreamTimeout() != 0 {
 		return c.OCRNewStreamTimeout()
 	}
-	return c.getWithFallback("P2PNewStreamTimeout", ParseDuration).(time.Duration)
+	return c.getWithFallback("P2PNewStreamTimeout", ParseDuration, lggr).(time.Duration)
 }

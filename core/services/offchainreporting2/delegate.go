@@ -211,7 +211,7 @@ func (d Delegate) ServicesForSpec(jobSpec job.Job) (services []job.Service, err 
 			d.lggr,
 		)
 
-		runResults := make(chan pipeline.Run, chain.Config().JobPipelineResultWriteQueueDepth())
+		runResults := make(chan pipeline.Run, chain.Config().JobPipelineResultWriteQueueDepth(d.lggr))
 		juelsPerFeeCoinPipelineSpec := pipeline.Spec{
 			ID:           jobSpec.ID,
 			DotDagSource: jobSpec.Offchainreporting2OracleSpec.JuelsPerFeeCoinPipeline,
@@ -270,7 +270,7 @@ func computeLocalConfig(config ValidationConfig, spec job.OffchainReporting2Orac
 	if spec.BlockchainTimeout != 0 {
 		blockchainTimeout = time.Duration(spec.BlockchainTimeout)
 	} else {
-		blockchainTimeout = config.OCR2BlockchainTimeout()
+		blockchainTimeout = config.OCR2BlockchainTimeout(nil)
 	}
 
 	var contractConfirmations uint16
@@ -284,15 +284,15 @@ func computeLocalConfig(config ValidationConfig, spec job.OffchainReporting2Orac
 	if spec.ContractConfigTrackerPollInterval != 0 {
 		contractConfigTrackerPollInterval = time.Duration(spec.ContractConfigTrackerPollInterval)
 	} else {
-		contractConfigTrackerPollInterval = config.OCR2ContractPollInterval()
+		contractConfigTrackerPollInterval = config.OCR2ContractPollInterval(nil)
 	}
 
 	lc := ocrtypes.LocalConfig{
 		BlockchainTimeout:                  blockchainTimeout,
 		ContractConfigConfirmations:        contractConfirmations,
 		ContractConfigTrackerPollInterval:  contractConfigTrackerPollInterval,
-		ContractTransmitterTransmitTimeout: config.OCR2ContractTransmitterTransmitTimeout(),
-		DatabaseTimeout:                    config.OCR2DatabaseTimeout(),
+		ContractTransmitterTransmitTimeout: config.OCR2ContractTransmitterTransmitTimeout(nil),
+		DatabaseTimeout:                    config.OCR2DatabaseTimeout(nil),
 	}
 	if config.Dev() {
 		// Skips config validation so we can use any config parameters we want.

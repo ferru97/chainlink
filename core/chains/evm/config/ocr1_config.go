@@ -3,7 +3,7 @@ package config
 import "time"
 
 func (c *chainScopedConfig) OCRContractConfirmations() uint16 {
-	val, ok := c.GeneralConfig.GlobalOCRContractConfirmations()
+	val, ok := c.GeneralConfig.GlobalOCRContractConfirmations(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("OCRContractConfirmations", val)
 		return val
@@ -12,7 +12,7 @@ func (c *chainScopedConfig) OCRContractConfirmations() uint16 {
 }
 
 func (c *chainScopedConfig) OCRContractTransmitterTransmitTimeout() time.Duration {
-	val, ok := c.GeneralConfig.GlobalOCRContractTransmitterTransmitTimeout()
+	val, ok := c.GeneralConfig.GlobalOCRContractTransmitterTransmitTimeout(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("OCRContractTransmitterTransmitTimeout", val)
 		return val
@@ -21,7 +21,7 @@ func (c *chainScopedConfig) OCRContractTransmitterTransmitTimeout() time.Duratio
 }
 
 func (c *chainScopedConfig) OCRDatabaseTimeout() time.Duration {
-	val, ok := c.GeneralConfig.GlobalOCRDatabaseTimeout()
+	val, ok := c.GeneralConfig.GlobalOCRDatabaseTimeout(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("OCRDatabaseTimeout", val)
 		return val
@@ -30,7 +30,7 @@ func (c *chainScopedConfig) OCRDatabaseTimeout() time.Duration {
 }
 
 func (c *chainScopedConfig) OCRObservationGracePeriod() time.Duration {
-	val, ok := c.GeneralConfig.GlobalOCRObservationGracePeriod()
+	val, ok := c.GeneralConfig.GlobalOCRObservationGracePeriod(c.logger)
 	if ok {
 		c.logEnvOverrideOnce("OCRObservationGracePeriod", val)
 		return val

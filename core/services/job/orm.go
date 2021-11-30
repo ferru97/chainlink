@@ -429,7 +429,7 @@ func (o *orm) LoadEnvConfigVars(jb *Job) error {
 		if err != nil {
 			return err
 		}
-		newSpec, err := LoadEnvConfigVarsOCR(ch.Config(), o.keyStore.P2P(), *jb.OffchainreportingOracleSpec)
+		newSpec, err := LoadEnvConfigVarsOCR(ch.Config(), o.keyStore.P2P(), *jb.OffchainreportingOracleSpec, o.lggr)
 		if err != nil {
 			return err
 		}
@@ -483,12 +483,12 @@ func LoadEnvConfigVarsDR(cfg DRSpecConfig, drs DirectRequestSpec) *DirectRequest
 }
 
 type OCRSpecConfig interface {
-	P2PPeerID() p2pkey.PeerID
-	OCRBlockchainTimeout() time.Duration
+	P2PPeerID() (p2pkey.PeerID, error)
+	OCRBlockchainTimeout(logger.L) time.Duration
 	OCRContractConfirmations() uint16
-	OCRContractPollInterval() time.Duration
-	OCRContractSubscribeInterval() time.Duration
-	OCRObservationTimeout() time.Duration
+	OCRContractPollInterval(logger.L) time.Duration
+	OCRContractSubscribeInterval(logger.L) time.Duration
+	OCRObservationTimeout(logger.L) time.Duration
 	OCRDatabaseTimeout() time.Duration
 	OCRObservationGracePeriod() time.Duration
 	OCRContractTransmitterTransmitTimeout() time.Duration
@@ -496,22 +496,22 @@ type OCRSpecConfig interface {
 	OCRKeyBundleID() (string, error)
 }
 
-func LoadEnvConfigVarsLocalOCR(cfg OCRSpecConfig, os OffchainReportingOracleSpec) *OffchainReportingOracleSpec {
+func LoadEnvConfigVarsLocalOCR(cfg OCRSpecConfig, os OffchainReportingOracleSpec, lggr logger.L) *OffchainReportingOracleSpec {
 	if os.ObservationTimeout == 0 {
 		os.ObservationTimeoutEnv = true
-		os.ObservationTimeout = models.Interval(cfg.OCRObservationTimeout())
+		os.ObservationTimeout = models.Interval(cfg.OCRObservationTimeout(lggr))
 	}
 	if os.BlockchainTimeout == 0 {
 		os.BlockchainTimeoutEnv = true
-		os.BlockchainTimeout = models.Interval(cfg.OCRBlockchainTimeout())
+		os.BlockchainTimeout = models.Interval(cfg.OCRBlockchainTimeout(lggr))
 	}
 	if os.ContractConfigTrackerSubscribeInterval == 0 {
 		os.ContractConfigTrackerSubscribeIntervalEnv = true
-		os.ContractConfigTrackerSubscribeInterval = models.Interval(cfg.OCRContractSubscribeInterval())
+		os.ContractConfigTrackerSubscribeInterval = models.Interval(cfg.OCRContractSubscribeInterval(lggr))
 	}
 	if os.ContractConfigTrackerPollInterval == 0 {
 		os.ContractConfigTrackerPollIntervalEnv = true
-		os.ContractConfigTrackerPollInterval = models.Interval(cfg.OCRContractPollInterval())
+		os.ContractConfigTrackerPollInterval = models.Interval(cfg.OCRContractPollInterval(lggr))
 	}
 	if os.ContractConfigConfirmations == 0 {
 		os.ContractConfigConfirmationsEnv = true
@@ -532,7 +532,7 @@ func LoadEnvConfigVarsLocalOCR(cfg OCRSpecConfig, os OffchainReportingOracleSpec
 	return &os
 }
 
-func LoadEnvConfigVarsOCR(cfg OCRSpecConfig, p2pStore keystore.P2P, os OffchainReportingOracleSpec) (*OffchainReportingOracleSpec, error) {
+func LoadEnvConfigVarsOCR(cfg OCRSpecConfig, p2pStore keystore.P2P, os OffchainReportingOracleSpec, lggr logger.Logger) (*OffchainReportingOracleSpec, error) {
 	if os.TransmitterAddress == nil {
 		ta, err := cfg.OCRTransmitterAddress()
 		if errors.Cause(err) != config.ErrUnset {
@@ -557,7 +557,7 @@ func LoadEnvConfigVarsOCR(cfg OCRSpecConfig, p2pStore keystore.P2P, os OffchainR
 		os.EncryptedOCRKeyBundleID = &encryptedOCRKeyBundleID
 	}
 
-	return LoadEnvConfigVarsLocalOCR(cfg, os), nil
+	return LoadEnvConfigVarsLocalOCR(cfg, os, lggr), nil
 }
 
 func (o *orm) FindJobTx(id int32) (Job, error) {

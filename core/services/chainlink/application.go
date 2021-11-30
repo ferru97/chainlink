@@ -10,10 +10,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/smartcontractkit/chainlink/core/services/offchainreporting2"
-
-	"github.com/smartcontractkit/chainlink/core/services/ocrcommon"
-
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/pkg/errors"
@@ -37,7 +33,9 @@ import (
 	"github.com/smartcontractkit/chainlink/core/services/job"
 	"github.com/smartcontractkit/chainlink/core/services/keeper"
 	"github.com/smartcontractkit/chainlink/core/services/keystore"
+	"github.com/smartcontractkit/chainlink/core/services/ocrcommon"
 	"github.com/smartcontractkit/chainlink/core/services/offchainreporting"
+	"github.com/smartcontractkit/chainlink/core/services/offchainreporting2"
 	"github.com/smartcontractkit/chainlink/core/services/periodicbackup"
 	"github.com/smartcontractkit/chainlink/core/services/pg"
 	"github.com/smartcontractkit/chainlink/core/services/pipeline"
@@ -159,20 +157,20 @@ func NewApplication(opts ApplicationOpts) (Application, error) {
 	shutdownSignal := opts.ShutdownSignal
 	keyStore := opts.KeyStore
 	chainSet := opts.ChainSet
-	globalLogger := opts.Logger
+	lggr := opts.Logger
 	eventBroadcaster := opts.EventBroadcaster
 	externalInitiatorManager := opts.ExternalInitiatorManager
 
 	var nurse *health.Nurse
 	if cfg.AutoPprofEnabled() {
-		globalLogger.Info("Nurse service (automatic pprof profiling) is enabled")
-		nurse = health.NewNurse(cfg, globalLogger)
+		lggr.Info("Nurse service (automatic pprof profiling) is enabled")
+		nurse = health.NewNurse(cfg, lggr)
 		err := nurse.Start()
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		globalLogger.Info("Nurse service (automatic pprof profiling) is disabled")
+		lggr.Info("Nurse service (automatic pprof profiling) is disabled")
 	}
 
 	healthChecker := health.NewChecker()
@@ -181,39 +179,43 @@ func NewApplication(opts ApplicationOpts) (Application, error) {
 	explorerClient := synchronization.ExplorerClient(&synchronization.NoopExplorerClient{})
 	monitoringEndpointGen := telemetry.MonitoringEndpointGenerator(&telemetry.NoopAgent{})
 
-	if cfg.ExplorerURL() != nil {
-		explorerClient = synchronization.NewExplorerClient(cfg.ExplorerURL(), cfg.ExplorerAccessKey(), cfg.ExplorerSecret(), cfg.StatsPusherLogging(), globalLogger)
+	explorerURL := cfg.ExplorerURL(lggr)
+	if explorerURL != nil {
+		explorerClient = synchronization.NewExplorerClient(explorerURL, cfg.ExplorerAccessKey(), cfg.ExplorerSecret(), cfg.StatsPusherLogging(lggr), lggr)
 		monitoringEndpointGen = telemetry.NewExplorerAgent(explorerClient)
 	}
 
 	// Use Explorer over TelemetryIngress if both URLs are set
-	if cfg.ExplorerURL() == nil && cfg.TelemetryIngressURL() != nil {
-		telemetryIngressClient = synchronization.NewTelemetryIngressClient(cfg.TelemetryIngressURL(),
-			cfg.TelemetryIngressServerPubKey(), keyStore.CSA(), cfg.TelemetryIngressLogging(), globalLogger)
+	if explorerURL == nil && cfg.TelemetryIngressURL(lggr) != nil {
+		telemetryIngressClient = synchronization.NewTelemetryIngressClient(cfg.TelemetryIngressURL(lggr),
+			cfg.TelemetryIngressServerPubKey(), keyStore.CSA(), cfg.TelemetryIngressLogging(lggr), lggr)
 		monitoringEndpointGen = telemetry.NewIngressAgentWrapper(telemetryIngressClient)
 	}
 	subservices = append(subservices, explorerClient, telemetryIngressClient)
 
-	if cfg.DatabaseBackupMode() != config.DatabaseBackupModeNone && cfg.DatabaseBackupFrequency() > 0 {
-		globalLogger.Infow("DatabaseBackup: periodic database backups are enabled", "frequency", cfg.DatabaseBackupFrequency())
+	if cfg.DatabaseBackupMode(lggr) != config.DatabaseBackupModeNone && cfg.DatabaseBackupFrequency(lggr) > 0 {
+		lggr.Infow("DatabaseBackup: periodic database backups are enabled", "frequency", cfg.DatabaseBackupFrequency(nil))
 
-		databaseBackup := periodicbackup.NewDatabaseBackup(cfg, globalLogger)
+		databaseBackup, err := periodicbackup.NewDatabaseBackup(cfg, lggr)
+		if err != nil {
+			return nil, err
+		}
 		subservices = append(subservices, databaseBackup)
 	} else {
-		globalLogger.Info("DatabaseBackup: periodic database backups are disabled. To enable automatic backups, set DATABASE_BACKUP_MODE=lite or DATABASE_BACKUP_MODE=full")
+		lggr.Info("DatabaseBackup: periodic database backups are disabled. To enable automatic backups, set DATABASE_BACKUP_MODE=lite or DATABASE_BACKUP_MODE=full")
 	}
 
 	subservices = append(subservices, eventBroadcaster, chainSet)
-	promReporter := services.NewPromReporter(db.DB, globalLogger)
+	promReporter := services.NewPromReporter(db.DB, lggr)
 	subservices = append(subservices, promReporter)
 
 	var (
-		pipelineORM    = pipeline.NewORM(db, globalLogger, cfg)
-		bridgeORM      = bridges.NewORM(db, globalLogger, cfg)
-		sessionORM     = sessions.NewORM(db, cfg.SessionTimeout().Duration(), globalLogger)
-		pipelineRunner = pipeline.NewRunner(pipelineORM, cfg, chainSet, keyStore.Eth(), keyStore.VRF(), globalLogger)
-		jobORM         = job.NewORM(db, chainSet, pipelineORM, keyStore, globalLogger, cfg)
-		bptxmORM       = bulletprooftxmanager.NewORM(db, globalLogger, cfg)
+		pipelineORM    = pipeline.NewORM(db, lggr, cfg)
+		bridgeORM      = bridges.NewORM(db, lggr, cfg)
+		sessionORM     = sessions.NewORM(db, cfg.SessionTimeout(lggr).Duration(), lggr)
+		pipelineRunner = pipeline.NewRunner(pipelineORM, cfg, chainSet, keyStore.Eth(), keyStore.VRF(), lggr)
+		jobORM         = job.NewORM(db, chainSet, pipelineORM, keyStore, lggr, cfg)
+		bptxmORM       = bulletprooftxmanager.NewORM(db, lggr, cfg)
 	)
 
 	for _, chain := range chainSet.Chains() {
@@ -224,7 +226,7 @@ func NewApplication(opts ApplicationOpts) (Application, error) {
 	var (
 		delegates = map[job.Type]job.Delegate{
 			job.DirectRequest: directrequest.NewDelegate(
-				globalLogger,
+				lggr,
 				pipelineRunner,
 				pipelineORM,
 				chainSet),
@@ -232,7 +234,7 @@ func NewApplication(opts ApplicationOpts) (Application, error) {
 				db,
 				jobORM,
 				pipelineRunner,
-				globalLogger,
+				lggr,
 				chainSet),
 			job.VRF: vrf.NewDelegate(
 				db,
@@ -240,15 +242,15 @@ func NewApplication(opts ApplicationOpts) (Application, error) {
 				pipelineRunner,
 				pipelineORM,
 				chainSet,
-				globalLogger,
+				lggr,
 				cfg),
 			job.Webhook: webhook.NewDelegate(
 				pipelineRunner,
 				externalInitiatorManager,
-				globalLogger),
+				lggr),
 			job.Cron: cron.NewDelegate(
 				pipelineRunner,
-				globalLogger),
+				lggr),
 		}
 		webhookJobRunner = delegates[job.Webhook].(*webhook.Delegate).WebhookJobRunner()
 	)
@@ -264,21 +266,21 @@ func NewApplication(opts ApplicationOpts) (Application, error) {
 			pipelineRunner,
 			db,
 			chainSet,
-			globalLogger,
+			lggr,
 		)
 	}
 
 	// We need p2p networking if either ocr1 or ocr2 is enabled
 	var peerWrapper *ocrcommon.SingletonPeerWrapper
-	if ((cfg.Dev() && cfg.P2PListenPort() > 0) || cfg.FeatureOffchainReporting()) || cfg.FeatureOffchainReporting2() {
+	if ((cfg.Dev() && cfg.P2PListenPort() > 0) || cfg.FeatureOffchainReporting(lggr)) || cfg.FeatureOffchainReporting2(lggr) {
 		if err := ocrcommon.ValidatePeerWrapperConfig(cfg); err != nil {
 			return nil, err
 		}
-		peerWrapper = ocrcommon.NewSingletonPeerWrapper(keyStore, cfg, db, globalLogger)
+		peerWrapper = ocrcommon.NewSingletonPeerWrapper(keyStore, cfg, db, lggr)
 		subservices = append(subservices, peerWrapper)
 	}
 
-	if (cfg.Dev() && cfg.P2PListenPort() > 0) || cfg.FeatureOffchainReporting() {
+	if (cfg.Dev() && cfg.P2PListenPort() > 0) || cfg.FeatureOffchainReporting(lggr) {
 		delegates[job.OffchainReporting] = offchainreporting.NewDelegate(
 			db,
 			jobORM,
@@ -287,13 +289,13 @@ func NewApplication(opts ApplicationOpts) (Application, error) {
 			peerWrapper,
 			monitoringEndpointGen,
 			chainSet,
-			globalLogger,
+			lggr,
 		)
 	} else {
-		globalLogger.Debug("Off-chain reporting disabled")
+		lggr.Debug("Off-chain reporting disabled")
 	}
-	if cfg.FeatureOffchainReporting2() {
-		globalLogger.Debug("Off-chain reporting v2 enabled")
+	if cfg.FeatureOffchainReporting2(lggr) {
+		lggr.Debug("Off-chain reporting v2 enabled")
 		delegates[job.OffchainReporting2] = offchainreporting2.NewDelegate(
 			db,
 			jobORM,
@@ -302,17 +304,17 @@ func NewApplication(opts ApplicationOpts) (Application, error) {
 			peerWrapper,
 			monitoringEndpointGen,
 			chainSet,
-			globalLogger,
+			lggr,
 		)
 	} else {
-		globalLogger.Debug("Off-chain reporting v2 disabled")
+		lggr.Debug("Off-chain reporting v2 disabled")
 	}
 
 	var lbs []utils.DependentAwaiter
 	for _, c := range chainSet.Chains() {
 		lbs = append(lbs, c.LogBroadcaster())
 	}
-	jobSpawner := job.NewSpawner(jobORM, cfg, delegates, db, globalLogger, lbs)
+	jobSpawner := job.NewSpawner(jobORM, cfg, delegates, db, lggr, lbs)
 	subservices = append(subservices, jobSpawner, pipelineRunner)
 
 	feedsORM := feeds.NewORM(db, opts.Logger, cfg)
@@ -322,9 +324,9 @@ func NewApplication(opts ApplicationOpts) (Application, error) {
 	var feedsService feeds.Service
 	chain, err := chainSet.Default()
 	if err != nil {
-		globalLogger.Warnw("Unable to load feeds service; no default chain available", "err", err)
+		lggr.Warnw("Unable to load feeds service; no default chain available", "err", err)
 	} else {
-		feedsService = feeds.NewService(feedsORM, jobORM, db, jobSpawner, keyStore, chain.Config(), chainSet, globalLogger, opts.Version)
+		feedsService = feeds.NewService(feedsORM, jobORM, db, jobSpawner, keyStore, chain.Config(), chainSet, lggr, opts.Version)
 	}
 
 	app := &ChainlinkApplication{
@@ -341,14 +343,14 @@ func NewApplication(opts ApplicationOpts) (Application, error) {
 		Config:                   cfg,
 		webhookJobRunner:         webhookJobRunner,
 		KeyStore:                 keyStore,
-		SessionReaper:            sessions.NewSessionReaper(db.DB, cfg, globalLogger),
+		SessionReaper:            sessions.NewSessionReaper(db.DB, cfg, lggr),
 		Exiter:                   os.Exit,
 		ExternalInitiatorManager: externalInitiatorManager,
 		shutdownSignal:           shutdownSignal,
 		explorerClient:           explorerClient,
 		HealthChecker:            healthChecker,
 		Nurse:                    nurse,
-		logger:                   globalLogger,
+		logger:                   lggr,
 		id:                       opts.ID,
 
 		sqlxDB: opts.SqlxDB,

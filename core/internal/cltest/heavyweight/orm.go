@@ -37,21 +37,21 @@ func FullTestDB(t *testing.T, name string, migrate bool, loadFixtures bool) (*co
 		SecretGenerator: cltest.MockSecretGenerator{},
 	}
 	gcfg := configtest.NewTestGeneralConfigWithOverrides(t, overrides)
-	gcfg.SetDialect(dialects.Postgres)
+	gcfg.Overrides.Dialect = dialects.Postgres
 
-	require.NoError(t, os.MkdirAll(gcfg.RootDir(), 0700))
-	migrationTestDBURL, err := dropAndCreateThrowawayTestDB(gcfg.DatabaseURL(), name)
+	require.NoError(t, os.MkdirAll(gcfg.RootDir(nil), 0700))
+	migrationTestDBURL, err := dropAndCreateThrowawayTestDB(gcfg.MustDatabaseURL(), name)
 	require.NoError(t, err)
 	lggr := logger.TestLogger(t)
 	db, err := pg.NewConnection(migrationTestDBURL, string(dialects.Postgres), pg.Config{
 		Logger:       lggr,
-		MaxOpenConns: gcfg.ORMMaxOpenConns(),
-		MaxIdleConns: gcfg.ORMMaxIdleConns(),
+		MaxOpenConns: gcfg.ORMMaxOpenConns(nil),
+		MaxIdleConns: gcfg.ORMMaxIdleConns(nil),
 	})
 	require.NoError(t, err)
 	t.Cleanup(func() {
 		assert.NoError(t, db.Close())
-		os.RemoveAll(gcfg.RootDir())
+		os.RemoveAll(gcfg.RootDir(nil))
 	})
 	gcfg.Overrides.DatabaseURL = null.StringFrom(migrationTestDBURL)
 	if migrate {

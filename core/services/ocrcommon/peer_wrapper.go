@@ -59,7 +59,11 @@ type (
 )
 
 func ValidatePeerWrapperConfig(config PeerWrapperConfig) error {
-	switch config.P2PNetworkingStack() {
+	n, err := config.P2PNetworkingStack()
+	if err != nil {
+		return err
+	}
+	switch n {
 	case ocrnetworking.NetworkingStackV1:
 		if config.P2PListenPort() == 0 {
 			return errors.New("networking stack v1 selected but no P2P_LISTEN_PORT specified")
@@ -114,7 +118,11 @@ func (p *SingletonPeerWrapper) Start() error {
 			p.lggr.Warn("No P2P keys found in keystore. Peer wrapper will not be fully initialized")
 			return nil
 		}
-		key, err := p.keyStore.P2P().GetOrFirst(p.config.P2PPeerID())
+		pid, err := p.config.P2PPeerID()
+		if err != nil {
+			p.lggr.Error(err)
+		}
+		key, err := p.keyStore.P2P().GetOrFirst(pid)
 		if err != nil {
 			return err
 		}
@@ -122,12 +130,15 @@ func (p *SingletonPeerWrapper) Start() error {
 
 		// We need to start the peer store wrapper if v1 is required.
 		// Also fallback to listen params if announce params not specified.
-		ns := p.config.P2PNetworkingStack()
+		ns, err := p.config.P2PNetworkingStack()
+		if err != nil {
+			p.lggr.Fatal(err)
+		}
 		var announcePort uint16
 		var announceIP net.IP
 		var peerStore p2ppeerstore.Peerstore
 		if ns == ocrnetworking.NetworkingStackV1 || ns == ocrnetworking.NetworkingStackV1V2 {
-			p.pstoreWrapper, err = NewPeerstoreWrapper(p.db, p.config.P2PPeerstoreWriteInterval(), p.PeerID, p.lggr, p.config)
+			p.pstoreWrapper, err = NewPeerstoreWrapper(p.db, p.config.P2PPeerstoreWriteInterval(p.lggr), p.PeerID, p.lggr, p.config)
 			if err != nil {
 				return errors.Wrap(err, "could not make new pstorewrapper")
 			}
@@ -140,7 +151,7 @@ func (p *SingletonPeerWrapper) Start() error {
 			if p.config.P2PAnnouncePort() != 0 {
 				announcePort = p.config.P2PAnnouncePort()
 			}
-			announceIP = p.config.P2PListenIP()
+			announceIP = p.config.P2PListenIP(p.lggr)
 			if p.config.P2PAnnounceIP() != nil {
 				announceIP = p.config.P2PAnnounceIP()
 			}
@@ -159,12 +170,12 @@ func (p *SingletonPeerWrapper) Start() error {
 		}
 
 		peerConfig := ocrnetworking.PeerConfig{
-			NetworkingStack: p.config.P2PNetworkingStack(),
+			NetworkingStack: ns,
 			PrivKey:         key.PrivKey,
 			Logger:          logger.NewOCRWrapper(p.lggr, p.config.OCRTraceLogging(), func(string) {}),
 
 			// V1 config
-			V1ListenIP:                         p.config.P2PListenIP(),
+			V1ListenIP:                         p.config.P2PListenIP(p.lggr),
 			V1ListenPort:                       p.config.P2PListenPort(),
 			V1AnnounceIP:                       announceIP,
 			V1AnnouncePort:                     announcePort,
@@ -174,19 +185,19 @@ func (p *SingletonPeerWrapper) Start() error {
 			// V2 config
 			V2ListenAddresses:    p.config.P2PV2ListenAddresses(),
 			V2AnnounceAddresses:  announceAddresses,
-			V2DeltaReconcile:     p.config.P2PV2DeltaReconcile().Duration(),
-			V2DeltaDial:          p.config.P2PV2DeltaDial().Duration(),
+			V2DeltaReconcile:     p.config.P2PV2DeltaReconcile(p.lggr).Duration(),
+			V2DeltaDial:          p.config.P2PV2DeltaDial(p.lggr).Duration(),
 			V2DiscovererDatabase: discovererDB,
 
 			EndpointConfig: ocrnetworking.EndpointConfig{
 				// V1 and V2 config
-				IncomingMessageBufferSize: p.config.P2PIncomingMessageBufferSize(),
-				OutgoingMessageBufferSize: p.config.P2POutgoingMessageBufferSize(),
+				IncomingMessageBufferSize: p.config.P2PIncomingMessageBufferSize(p.lggr),
+				OutgoingMessageBufferSize: p.config.P2POutgoingMessageBufferSize(p.lggr),
 
 				// V1 Config
-				NewStreamTimeout:       p.config.P2PNewStreamTimeout(),
-				DHTLookupInterval:      p.config.P2PDHTLookupInterval(),
-				BootstrapCheckInterval: p.config.P2PBootstrapCheckInterval(),
+				NewStreamTimeout:       p.config.P2PNewStreamTimeout(p.lggr),
+				DHTLookupInterval:      p.config.P2PDHTLookupInterval(p.lggr),
+				BootstrapCheckInterval: p.config.P2PBootstrapCheckInterval(p.lggr),
 			},
 		}
 

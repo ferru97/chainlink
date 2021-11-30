@@ -1,6 +1,7 @@
 package config
 
 import (
+	"crypto/rand"
 	"fmt"
 	"log"
 	"math/big"
@@ -16,6 +17,7 @@ import (
 	"github.com/multiformats/go-multiaddr"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
+	"go.uber.org/multierr"
 	"go.uber.org/zap/zapcore"
 
 	"github.com/smartcontractkit/chainlink/core/assets"
@@ -40,79 +42,85 @@ var (
 	configFileNotFoundError = reflect.TypeOf(viper.ConfigFileNotFoundError{})
 )
 
+// A logger.L may be optionally included to report invalid values
 type GeneralOnlyConfig interface {
-	AdminCredentialsFile() string
+	Validate() (warns []string, err error)
+
+	SetLogLevel(lvl zapcore.Level) error
+	SetLogSQL(logSQL bool)
+
+	AdminCredentialsFile(logger.L) string
 	AllowOrigins() string
 	AuthenticatedRateLimit() int64
-	AuthenticatedRateLimitPeriod() models.Duration
+	AuthenticatedRateLimitPeriod(logger.L) models.Duration
 	AutoPprofEnabled() bool
-	AutoPprofProfileRoot() string
-	AutoPprofPollInterval() models.Duration
-	AutoPprofGatherDuration() models.Duration
-	AutoPprofGatherTraceDuration() models.Duration
-	AutoPprofMaxProfileSize() utils.FileSize
+	AutoPprofProfileRoot(logger.L) string
+	AutoPprofPollInterval(logger.L) models.Duration
+	AutoPprofGatherDuration(logger.L) models.Duration
+	AutoPprofGatherTraceDuration(logger.L) models.Duration
+	AutoPprofMaxProfileSize(logger.L) utils.FileSize
 	AutoPprofCPUProfileRate() int
 	AutoPprofMemProfileRate() int
 	AutoPprofBlockProfileRate() int
 	AutoPprofMutexProfileFraction() int
-	AutoPprofMemThreshold() utils.FileSize
+	AutoPprofMemThreshold(logger.L) utils.FileSize
 	AutoPprofGoroutineThreshold() int
-	BlockBackfillDepth() uint64
-	BlockBackfillSkip() bool
-	BridgeResponseURL() *url.URL
-	CertFile() string
+	BlockBackfillDepth(logger.L) uint64
+	BlockBackfillSkip(logger.L) bool
+	BridgeResponseURL(logger.L) *url.URL
+	CertFile(logger.L) string
 	ClientNodeURL() string
 	DatabaseBackupDir() string
-	DatabaseBackupFrequency() time.Duration
-	DatabaseBackupMode() DatabaseBackupMode
-	DatabaseBackupURL() *url.URL
-	DatabaseListenerMaxReconnectDuration() time.Duration
-	DatabaseListenerMinReconnectInterval() time.Duration
-	DatabaseLockingMode() string
-	DatabaseURL() url.URL
-	DefaultChainID() *big.Int
+	DatabaseBackupFrequency(logger.L) time.Duration
+	DatabaseBackupMode(logger.L) DatabaseBackupMode
+	DatabaseBackupURL() (*url.URL, error)
+	DatabaseListenerMaxReconnectDuration(logger.L) time.Duration
+	DatabaseListenerMinReconnectInterval(logger.L) time.Duration
+	DatabaseLockingMode(logger.L) string
+	DatabaseURL() (url.URL, error)
+	DefaultChainID() (*big.Int, error)
 	DefaultHTTPAllowUnrestrictedNetworkAccess() bool
 	DefaultHTTPLimit() int64
-	DefaultHTTPTimeout() models.Duration
-	DefaultMaxHTTPAttempts() uint
+	DefaultHTTPTimeout(logger.L) models.Duration
+	DefaultMaxHTTPAttempts(logger.L) uint
 	Dev() bool
 	EVMDisabled() bool
 	EthereumDisabled() bool
-	EthereumHTTPURL() *url.URL
-	EthereumSecondaryURLs() []url.URL
+	EthereumHTTPURL() (*url.URL, error)
+	EthereumSecondaryURLs() ([]url.URL, error)
 	EthereumURL() string
 	ExplorerAccessKey() string
 	ExplorerSecret() string
-	ExplorerURL() *url.URL
+	ExplorerURL(logger.L) *url.URL
 	FMDefaultTransactionQueueDepth() uint32
 	FMSimulateTransactions() bool
 	FeatureExternalInitiators() bool
-	FeatureOffchainReporting() bool
-	FeatureOffchainReporting2() bool
-	FeatureUICSAKeys() bool
-	FeatureUIFeedsManager() bool
+	FeatureOffchainReporting(logger.L) bool
+	FeatureOffchainReporting2(logger.L) bool
+	FeatureUICSAKeys(logger.L) bool
+	FeatureUIFeedsManager(logger.L) bool
 	GetAdvisoryLockIDConfiguredOrDefault() int64
 	GetDatabaseDialectConfiguredOrDefault() dialects.DialectName
-	GlobalLockRetryInterval() models.Duration
-	HTTPServerWriteTimeout() time.Duration
+	GlobalLockRetryInterval(logger.L) models.Duration
+	HTTPServerWriteTimeout(logger.L) time.Duration
 	InsecureFastScrypt() bool
 	InsecureSkipVerify() bool
 	JSONConsole() bool
-	JobPipelineMaxRunDuration() time.Duration
-	JobPipelineReaperInterval() time.Duration
-	JobPipelineReaperThreshold() time.Duration
-	JobPipelineResultWriteQueueDepth() uint64
+	JobPipelineMaxRunDuration(logger.L) time.Duration
+	JobPipelineReaperInterval(logger.L) time.Duration
+	JobPipelineReaperThreshold(logger.L) time.Duration
+	JobPipelineResultWriteQueueDepth(logger.L) uint64
 	KeeperDefaultTransactionQueueDepth() uint32
 	KeeperGasPriceBufferPercent() uint32
 	KeeperGasTipCapBufferPercent() uint32
 	KeeperMaximumGracePeriod() int64
-	KeeperRegistryCheckGasOverhead() uint64
-	KeeperRegistryPerformGasOverhead() uint64
-	KeeperRegistrySyncInterval() time.Duration
-	KeeperRegistrySyncUpkeepQueueSize() uint32
-	KeyFile() string
-	LeaseLockRefreshInterval() time.Duration
-	LeaseLockDuration() time.Duration
+	KeeperRegistryCheckGasOverhead(logger.L) uint64
+	KeeperRegistryPerformGasOverhead(logger.L) uint64
+	KeeperRegistrySyncInterval(logger.L) time.Duration
+	KeeperRegistrySyncUpkeepQueueSize(logger.L) uint32
+	KeyFile(logger.L) string
+	LeaseLockRefreshInterval(logger.L) time.Duration
+	LeaseLockDuration(logger.L) time.Duration
 	LogLevel() zapcore.Level
 	DefaultLogLevel() zapcore.Level
 	LogSQLMigrations() bool
@@ -120,81 +128,78 @@ type GeneralOnlyConfig interface {
 	LogToDisk() bool
 	LogUnixTimestamps() bool
 	MigrateDatabase() bool
-	ORMMaxIdleConns() int
-	ORMMaxOpenConns() int
-	Port() uint16
+	ORMMaxIdleConns(logger.L) int
+	ORMMaxOpenConns(logger.L) int
+	Port(logger.L) uint16
 	RPID() string
 	RPOrigin() string
-	ReaperExpiration() models.Duration
+	ReaperExpiration(logger.L) models.Duration
 	ReplayFromBlock() int64
-	RootDir() string
+	RootDir(logger.L) string
 	SecureCookies() bool
 	SessionOptions() sessions.Options
-	SessionSecret() ([]byte, error)
-	SessionTimeout() models.Duration
-	SetDialect(dialects.DialectName)
-	SetLogLevel(lvl zapcore.Level) error
-	SetLogSQL(logSQL bool)
-	StatsPusherLogging() bool
+	SessionSecret(logger.L) ([]byte, error)
+	SessionTimeout(logger.L) models.Duration
+	StatsPusherLogging(logger.L) bool
 	TLSCertPath() string
-	TLSDir() string
+	TLSDir(logger.L) string
 	TLSHost() string
 	TLSKeyPath() string
-	TLSPort() uint16
+	TLSPort(logger.L) uint16
 	TLSRedirect() bool
-	TelemetryIngressLogging() bool
+	TelemetryIngressLogging(logger.L) bool
 	TelemetryIngressServerPubKey() string
-	TelemetryIngressURL() *url.URL
-	TriggerFallbackDBPollInterval() time.Duration
+	TelemetryIngressURL(logger.L) *url.URL
+	TriggerFallbackDBPollInterval(logger.L) time.Duration
 	UnAuthenticatedRateLimit() int64
-	UnAuthenticatedRateLimitPeriod() models.Duration
+	UnAuthenticatedRateLimitPeriod(logger.L) models.Duration
 	UseLegacyEthEnvVars() bool
-	Validate() error
 }
 
 // GlobalConfig holds global ENV overrides for EVM chains
 // If set the global ENV will override everything
 // The second bool indicates if it is set or not
+// A logger.L may be optionally included to report invalid values
 type GlobalConfig interface {
-	GlobalBalanceMonitorEnabled() (bool, bool)
-	GlobalBlockEmissionIdleWarningThreshold() (time.Duration, bool)
-	GlobalBlockHistoryEstimatorBatchSize() (uint32, bool)
-	GlobalBlockHistoryEstimatorBlockDelay() (uint16, bool)
-	GlobalBlockHistoryEstimatorBlockHistorySize() (uint16, bool)
-	GlobalBlockHistoryEstimatorTransactionPercentile() (uint16, bool)
-	GlobalEthTxReaperInterval() (time.Duration, bool)
-	GlobalEthTxReaperThreshold() (time.Duration, bool)
-	GlobalEthTxResendAfterThreshold() (time.Duration, bool)
-	GlobalEvmDefaultBatchSize() (uint32, bool)
-	GlobalEvmEIP1559DynamicFees() (bool, bool)
-	GlobalEvmFinalityDepth() (uint32, bool)
-	GlobalEvmGasBumpPercent() (uint16, bool)
-	GlobalEvmGasBumpThreshold() (uint64, bool)
-	GlobalEvmGasBumpTxDepth() (uint16, bool)
-	GlobalEvmGasBumpWei() (*big.Int, bool)
-	GlobalEvmGasLimitDefault() (uint64, bool)
-	GlobalEvmGasLimitMultiplier() (float32, bool)
-	GlobalEvmGasLimitTransfer() (uint64, bool)
-	GlobalEvmGasPriceDefault() (*big.Int, bool)
-	GlobalEvmGasTipCapDefault() (*big.Int, bool)
-	GlobalEvmGasTipCapMinimum() (*big.Int, bool)
-	GlobalEvmHeadTrackerHistoryDepth() (uint32, bool)
-	GlobalEvmHeadTrackerMaxBufferSize() (uint32, bool)
-	GlobalEvmHeadTrackerSamplingInterval() (time.Duration, bool)
-	GlobalEvmLogBackfillBatchSize() (uint32, bool)
-	GlobalEvmMaxGasPriceWei() (*big.Int, bool)
-	GlobalEvmMaxInFlightTransactions() (uint32, bool)
-	GlobalEvmMaxQueuedTransactions() (uint64, bool)
-	GlobalEvmMinGasPriceWei() (*big.Int, bool)
-	GlobalEvmNonceAutoSync() (bool, bool)
-	GlobalEvmRPCDefaultBatchSize() (uint32, bool)
+	GlobalBalanceMonitorEnabled(logger.L) (bool, bool)
+	GlobalBlockEmissionIdleWarningThreshold(logger.L) (time.Duration, bool)
+	GlobalBlockHistoryEstimatorBatchSize(logger.L) (uint32, bool)
+	GlobalBlockHistoryEstimatorBlockDelay(logger.L) (uint16, bool)
+	GlobalBlockHistoryEstimatorBlockHistorySize(logger.L) (uint16, bool)
+	GlobalBlockHistoryEstimatorTransactionPercentile(logger.L) (uint16, bool)
+	GlobalEthTxReaperInterval(logger.L) (time.Duration, bool)
+	GlobalEthTxReaperThreshold(logger.L) (time.Duration, bool)
+	GlobalEthTxResendAfterThreshold(logger.L) (time.Duration, bool)
+	GlobalEvmDefaultBatchSize(logger.L) (uint32, bool)
+	GlobalEvmEIP1559DynamicFees(logger.L) (bool, bool)
+	GlobalEvmFinalityDepth(logger.L) (uint32, bool)
+	GlobalEvmGasBumpPercent(logger.L) (uint16, bool)
+	GlobalEvmGasBumpThreshold(logger.L) (uint64, bool)
+	GlobalEvmGasBumpTxDepth(logger.L) (uint16, bool)
+	GlobalEvmGasBumpWei(logger.L) (*big.Int, bool)
+	GlobalEvmGasLimitDefault(logger.L) (uint64, bool)
+	GlobalEvmGasLimitMultiplier(logger.L) (float32, bool)
+	GlobalEvmGasLimitTransfer(logger.L) (uint64, bool)
+	GlobalEvmGasPriceDefault(logger.L) (*big.Int, bool)
+	GlobalEvmGasTipCapDefault(logger.L) (*big.Int, bool)
+	GlobalEvmGasTipCapMinimum(logger.L) (*big.Int, bool)
+	GlobalEvmHeadTrackerHistoryDepth(logger.L) (uint32, bool)
+	GlobalEvmHeadTrackerMaxBufferSize(logger.L) (uint32, bool)
+	GlobalEvmHeadTrackerSamplingInterval(logger.L) (time.Duration, bool)
+	GlobalEvmLogBackfillBatchSize(logger.L) (uint32, bool)
+	GlobalEvmMaxGasPriceWei(logger.L) (*big.Int, bool)
+	GlobalEvmMaxInFlightTransactions(logger.L) (uint32, bool)
+	GlobalEvmMaxQueuedTransactions(logger.L) (uint64, bool)
+	GlobalEvmMinGasPriceWei(logger.L) (*big.Int, bool)
+	GlobalEvmNonceAutoSync(logger.L) (bool, bool)
+	GlobalEvmRPCDefaultBatchSize(logger.L) (uint32, bool)
 	GlobalFlagsContractAddress() (string, bool)
 	GlobalGasEstimatorMode() (string, bool)
 	GlobalChainType() (string, bool)
 	GlobalLinkContractAddress() (string, bool)
-	GlobalMinIncomingConfirmations() (uint32, bool)
-	GlobalMinRequiredOutgoingConfirmations() (uint64, bool)
-	GlobalMinimumContractPayment() (*assets.Link, bool)
+	GlobalMinIncomingConfirmations(logger.L) (uint32, bool)
+	GlobalMinRequiredOutgoingConfirmations(logger.L) (uint64, bool)
+	GlobalMinimumContractPayment(logger.L) (*assets.Link, bool)
 
 	OCR1Config
 	OCR2Config
@@ -214,29 +219,31 @@ type GeneralConfig interface {
 // If you add an entry here which does not contain sensitive information, you
 // should also update presenters.ConfigWhitelist and cmd_test.TestClient_RunNodeShowsEnv.
 type generalConfig struct {
-	viper            *viper.Viper
-	secretGenerator  SecretGenerator
-	randomP2PPort    uint16
-	randomP2PPortMtx *sync.RWMutex
-	dialect          dialects.DialectName
-	advisoryLockID   int64
-	logLevel         zapcore.Level
-	defaultLogLevel  zapcore.Level
-	logSQL           bool
-	logMutex         sync.RWMutex
+	viper           *viper.Viper
+	secretGenerator SecretGenerator
+	randomP2PPort   uint16
+	dialect         dialects.DialectName
+	advisoryLockID  int64
+	logLevel        zapcore.Level
+	defaultLogLevel zapcore.Level
+	logSQL          bool
+	logMutex        sync.RWMutex
 }
 
 // NewGeneralConfig returns the config with the environment variables set to their
 // respective fields, or their defaults if environment variables are not set.
-func NewGeneralConfig() GeneralConfig {
+func NewGeneralConfig() (GeneralConfig, []string, error) {
 	v := viper.New()
-	c := newGeneralConfigWithViper(v)
+	c, warns, err := newGeneralConfigWithViper(v)
+	if err != nil {
+		return nil, nil, err
+	}
 	c.secretGenerator = FilePersistedSecretGenerator{}
 	c.dialect = dialects.Postgres
-	return c
+	return c, warns, nil
 }
 
-func newGeneralConfigWithViper(v *viper.Viper) *generalConfig {
+func newGeneralConfigWithViper(v *viper.Viper) (config *generalConfig, warns []string, err error) {
 	schemaT := reflect.TypeOf(ConfigSchema{})
 	for index := 0; index < schemaT.NumField(); index++ {
 		item := schemaT.FieldByIndex([]int{index})
@@ -248,115 +255,123 @@ func newGeneralConfigWithViper(v *viper.Viper) *generalConfig {
 		_ = v.BindEnv(name, name)
 	}
 
-	config := &generalConfig{
-		viper:            v,
-		randomP2PPortMtx: new(sync.RWMutex),
-		defaultLogLevel:  DefaultLogLevel.Level,
+	config = &generalConfig{
+		viper:           v,
+		defaultLogLevel: DefaultLogLevel.Level,
 	}
 
-	if err := utils.EnsureDirAndMaxPerms(config.RootDir(), os.FileMode(0700)); err != nil {
-		logger.Fatalf(`Error creating root directory "%s": %+v`, config.RootDir(), err)
+	rootDir := config.RootDir(nil)
+	if err := utils.EnsureDirAndMaxPerms(rootDir, os.FileMode(0700)); err != nil {
+		return nil, nil, errors.Wrapf(err, `Error creating root directory "%s"`, rootDir)
 	}
 
 	v.SetConfigName("chainlink")
-	v.AddConfigPath(config.RootDir())
-	err := v.ReadInConfig()
-	if err != nil && reflect.TypeOf(err) != configFileNotFoundError {
-		logger.Warnf("Unable to load config file: %v\n", err)
+	v.AddConfigPath(rootDir)
+	if err := v.ReadInConfig(); err != nil && reflect.TypeOf(err) != configFileNotFoundError {
+		warns = append(warns, fmt.Sprintf("Unable to load config file: %v", err))
+	}
+
+	r, err := rand.Int(rand.Reader, big.NewInt(65535-1023))
+	if err != nil {
+		return nil, nil, fmt.Errorf("unexpected error generating random port: %w", err)
+	}
+	config.randomP2PPort = uint16(r.Int64() + 1024)
+	if !v.IsSet(EnvVarName("P2PListenPort")) {
+		warns = append(warns, fmt.Sprintf("P2P_LISTEN_PORT was not set, listening on random port %d. A new random port will be generated on every boot, for stability it is recommended to set P2P_LISTEN_PORT to a fixed value in your environment", config.randomP2PPort))
 	}
 
 	if v.IsSet(EnvVarName("LogLevel")) {
 		str := v.GetString(EnvVarName("LogLevel"))
 		ll, err := ParseLogLevel(str)
 		if err != nil {
-			logger.Errorf("error parsing log level: %s, falling back to %s", str, DefaultLogLevel.Level)
+			warns = append(warns, fmt.Sprintf("error parsing log level: %s, falling back to %s", str, DefaultLogLevel.Level))
 		} else {
 			config.defaultLogLevel = ll.(LogLevel).Level
 		}
 	}
 	config.logLevel = config.defaultLogLevel
 	config.logSQL = viper.GetBool(EnvVarName("LogSQL"))
-	config.logMutex = sync.RWMutex{}
 
-	return config
+	return
 }
 
 // Validate performs basic sanity checks on config and returns error if any
 // misconfiguration would be fatal to the application
-func (c *generalConfig) Validate() error {
+func (c *generalConfig) Validate() (warns []string, err error) {
 	if c.P2PAnnouncePort() != 0 && c.P2PAnnounceIP() == nil {
-		return errors.Errorf("P2P_ANNOUNCE_PORT was given as %v but P2P_ANNOUNCE_IP was unset. You must also set P2P_ANNOUNCE_IP if P2P_ANNOUNCE_PORT is set", c.P2PAnnouncePort())
+		return nil, errors.Errorf("P2P_ANNOUNCE_PORT was given as %v but P2P_ANNOUNCE_IP was unset. You must also set P2P_ANNOUNCE_IP if P2P_ANNOUNCE_PORT is set", c.P2PAnnouncePort())
 	}
 
 	if _, exists := os.LookupEnv("MINIMUM_CONTRACT_PAYMENT"); exists {
-		return errors.Errorf("MINIMUM_CONTRACT_PAYMENT is deprecated, use MINIMUM_CONTRACT_PAYMENT_LINK_JUELS instead.")
+		return nil, errors.Errorf("MINIMUM_CONTRACT_PAYMENT is deprecated, use MINIMUM_CONTRACT_PAYMENT_LINK_JUELS instead.")
 	}
 
 	if _, err := c.OCRKeyBundleID(); errors.Cause(err) == ErrInvalid {
-		return err
+		return nil, err
 	}
 	if _, err := c.OCRTransmitterAddress(); errors.Cause(err) == ErrInvalid {
-		return err
+		return nil, err
 	}
 	if peers, err := c.P2PBootstrapPeers(); err == nil {
 		for i := range peers {
 			if _, err := multiaddr.NewMultiaddr(peers[i]); err != nil {
-				return errors.Errorf("p2p bootstrap peer %d is invalid: err %v", i, err)
+				return nil, errors.Errorf("p2p bootstrap peer %d is invalid: err %v", i, err)
 			}
 		}
 	}
 	if me := c.OCRMonitoringEndpoint(); me != "" {
 		if _, err := url.Parse(me); err != nil {
-			return errors.Wrapf(err, "invalid monitoring url: %s", me)
+			return nil, errors.Wrapf(err, "invalid monitoring url: %s", me)
 		}
 	}
 	if ct, set := c.GlobalChainType(); set && !chains.ChainType(ct).IsValid() {
-		return errors.Errorf("CHAIN_TYPE is invalid: %s", ct)
+		return nil, errors.Errorf("CHAIN_TYPE is invalid: %s", ct)
 	}
 
 	if !c.UseLegacyEthEnvVars() {
 		if c.EthereumURL() != "" {
-			logger.Warn("ETH_URL has no effect when USE_LEGACY_ETH_ENV_VARS=false")
+			warns = append(warns, "ETH_URL has no effect when USE_LEGACY_ETH_ENV_VARS=false")
 		}
-		if c.EthereumHTTPURL() != nil {
-			logger.Warn("ETH_HTTP_URL has no effect when USE_LEGACY_ETH_ENV_VARS=false")
+		if ethURL, err := c.EthereumHTTPURL(); err != nil {
+			return nil, err
+		} else if ethURL != nil {
+			warns = append(warns, "ETH_HTTP_URL has no effect when USE_LEGACY_ETH_ENV_VARS=false")
 		}
-		if len(c.EthereumSecondaryURLs()) > 0 {
-			logger.Warn("ETH_SECONDARY_URL/ETH_SECONDARY_URLS have no effect when USE_LEGACY_ETH_ENV_VARS=false")
+		if urls, err := c.EthereumSecondaryURLs(); err != nil {
+			return nil, err
+		} else if len(urls) > 0 {
+			warns = append(warns, "ETH_SECONDARY_URL/ETH_SECONDARY_URLS have no effect when USE_LEGACY_ETH_ENV_VARS=false")
 		}
 	}
 	// Warn on legacy OCR env vars
 	if c.OCRDHTLookupInterval() != 0 {
-		logger.Warn("OCR_DHT_LOOKUP_INTERVAL is deprecated, use P2P_DHT_LOOKUP_INTERVAL instead")
+		warns = append(warns, "OCR_DHT_LOOKUP_INTERVAL is deprecated, use P2P_DHT_LOOKUP_INTERVAL instead")
 	}
 	if c.OCRBootstrapCheckInterval() != 0 {
-		logger.Warn("OCR_BOOTSTRAP_CHECK_INTERVAL is deprecated, use P2P_BOOTSTRAP_CHECK_INTERVAL instead")
+		warns = append(warns, "OCR_BOOTSTRAP_CHECK_INTERVAL is deprecated, use P2P_BOOTSTRAP_CHECK_INTERVAL instead")
 	}
 	if c.OCRIncomingMessageBufferSize() != 0 {
-		logger.Warn("OCR_INCOMING_MESSAGE_BUFFER_SIZE is deprecated, use P2P_INCOMING_MESSAGE_BUFFER_SIZE instead")
+		warns = append(warns, "OCR_INCOMING_MESSAGE_BUFFER_SIZE is deprecated, use P2P_INCOMING_MESSAGE_BUFFER_SIZE instead")
 	}
 	if c.OCROutgoingMessageBufferSize() != 0 {
-		logger.Warn("OCR_OUTGOING_MESSAGE_BUFFER_SIZE is deprecated, use P2P_OUTGOING_MESSAGE_BUFFER_SIZE instead")
+		warns = append(warns, "OCR_OUTGOING_MESSAGE_BUFFER_SIZE is deprecated, use P2P_OUTGOING_MESSAGE_BUFFER_SIZE instead")
 	}
 	if c.OCRNewStreamTimeout() != 0 {
-		logger.Warn("OCR_NEW_STREAM_TIMEOUT is deprecated, use P2P_NEW_STREAM_TIMEOUT instead")
+		warns = append(warns, "OCR_NEW_STREAM_TIMEOUT is deprecated, use P2P_NEW_STREAM_TIMEOUT instead")
 	}
 
-	switch c.DatabaseLockingMode() {
+	dbLockingMode := c.DatabaseLockingMode(nil)
+	switch dbLockingMode {
 	case "dual", "lease", "advisorylock", "none":
 	default:
-		return errors.Errorf("unrecognised value for DATABASE_LOCKING_MODE: %s (valid options are 'dual', 'lease', 'advisorylock' or 'none')", c.DatabaseLockingMode())
+		return nil, errors.Errorf("unrecognised value for DATABASE_LOCKING_MODE: %s (valid options are 'dual', 'lease', 'advisorylock' or 'none')", dbLockingMode)
 	}
 
-	if c.LeaseLockRefreshInterval() > c.LeaseLockDuration()/2 {
-		return errors.Errorf("LEASE_LOCK_REFRESH_INTERVAL must be less than or equal to half of LEASE_LOCK_DURATION (got LEASE_LOCK_REFRESH_INTERVAL=%s, LEASE_LOCK_DURATION=%s)", c.LeaseLockRefreshInterval().String(), c.LeaseLockDuration().String())
+	if refreshInterval, lockDuration := c.LeaseLockRefreshInterval(nil), c.LeaseLockDuration(nil); refreshInterval > lockDuration/2 {
+		return nil, errors.Errorf("LEASE_LOCK_REFRESH_INTERVAL must be less than or equal to half of LEASE_LOCK_DURATION (got LEASE_LOCK_REFRESH_INTERVAL=%d, LEASE_LOCK_DURATION=%d)", refreshInterval, lockDuration)
 	}
 
-	return nil
-}
-
-func (c *generalConfig) SetDialect(d dialects.DialectName) {
-	c.dialect = d
+	return
 }
 
 func (c *generalConfig) GetAdvisoryLockIDConfiguredOrDefault() int64 {
@@ -373,12 +388,12 @@ func (c *generalConfig) AllowOrigins() string {
 }
 
 // AdminCredentialsFile points to text file containing admin credentials for logging in
-func (c *generalConfig) AdminCredentialsFile() string {
+func (c *generalConfig) AdminCredentialsFile(lggr logger.L) string {
 	fieldName := "AdminCredentialsFile"
 	file := c.viper.GetString(EnvVarName(fieldName))
 	defaultValue, _ := defaultValue(fieldName)
 	if file == defaultValue {
-		return filepath.Join(c.RootDir(), "apicredentials")
+		return filepath.Join(c.RootDir(lggr), "apicredentials")
 	}
 	return file
 }
@@ -389,36 +404,36 @@ func (c *generalConfig) AuthenticatedRateLimit() int64 {
 }
 
 // AuthenticatedRateLimitPeriod defines the period to which authenticated requests get limited
-func (c *generalConfig) AuthenticatedRateLimitPeriod() models.Duration {
-	return models.MustMakeDuration(c.getWithFallback("AuthenticatedRateLimitPeriod", ParseDuration).(time.Duration))
+func (c *generalConfig) AuthenticatedRateLimitPeriod(lggr logger.L) models.Duration {
+	return models.MustMakeDuration(c.getWithFallback("AuthenticatedRateLimitPeriod", ParseDuration, lggr).(time.Duration))
 }
 
 func (c *generalConfig) AutoPprofEnabled() bool {
 	return c.viper.GetBool(EnvVarName("AutoPprofEnabled"))
 }
 
-func (c *generalConfig) AutoPprofProfileRoot() string {
+func (c *generalConfig) AutoPprofProfileRoot(lggr logger.L) string {
 	root := c.viper.GetString(EnvVarName("AutoPprofProfileRoot"))
 	if root == "" {
-		return c.RootDir()
+		return c.RootDir(lggr)
 	}
 	return root
 }
 
-func (c *generalConfig) AutoPprofPollInterval() models.Duration {
-	return models.MustMakeDuration(c.getWithFallback("AutoPprofPollInterval", ParseDuration).(time.Duration))
+func (c *generalConfig) AutoPprofPollInterval(lggr logger.L) models.Duration {
+	return models.MustMakeDuration(c.getWithFallback("AutoPprofPollInterval", ParseDuration, lggr).(time.Duration))
 }
 
-func (c *generalConfig) AutoPprofGatherDuration() models.Duration {
-	return models.MustMakeDuration(c.getWithFallback("AutoPprofGatherDuration", ParseDuration).(time.Duration))
+func (c *generalConfig) AutoPprofGatherDuration(lggr logger.L) models.Duration {
+	return models.MustMakeDuration(c.getWithFallback("AutoPprofGatherDuration", ParseDuration, lggr).(time.Duration))
 }
 
-func (c *generalConfig) AutoPprofGatherTraceDuration() models.Duration {
-	return models.MustMakeDuration(c.getWithFallback("AutoPprofGatherTraceDuration", ParseDuration).(time.Duration))
+func (c *generalConfig) AutoPprofGatherTraceDuration(lggr logger.L) models.Duration {
+	return models.MustMakeDuration(c.getWithFallback("AutoPprofGatherTraceDuration", ParseDuration, lggr).(time.Duration))
 }
 
-func (c *generalConfig) AutoPprofMaxProfileSize() utils.FileSize {
-	return c.getWithFallback("AutoPprofMaxProfileSize", ParseFileSize).(utils.FileSize)
+func (c *generalConfig) AutoPprofMaxProfileSize(lggr logger.L) utils.FileSize {
+	return c.getWithFallback("AutoPprofMaxProfileSize", ParseFileSize, lggr).(utils.FileSize)
 }
 
 func (c *generalConfig) AutoPprofCPUProfileRate() int {
@@ -437,8 +452,8 @@ func (c *generalConfig) AutoPprofMutexProfileFraction() int {
 	return c.viper.GetInt(EnvVarName("AutoPprofMutexProfileFraction"))
 }
 
-func (c *generalConfig) AutoPprofMemThreshold() utils.FileSize {
-	return c.getWithFallback("AutoPprofMemThreshold", ParseFileSize).(utils.FileSize)
+func (c *generalConfig) AutoPprofMemThreshold(lggr logger.L) utils.FileSize {
+	return c.getWithFallback("AutoPprofMemThreshold", ParseFileSize, lggr).(utils.FileSize)
 }
 
 func (c *generalConfig) AutoPprofGoroutineThreshold() int {
@@ -447,18 +462,18 @@ func (c *generalConfig) AutoPprofGoroutineThreshold() int {
 
 // BlockBackfillDepth specifies the number of blocks before the current HEAD that the
 // log broadcaster will try to re-consume logs from
-func (c *generalConfig) BlockBackfillDepth() uint64 {
-	return c.getWithFallback("BlockBackfillDepth", ParseUint64).(uint64)
+func (c *generalConfig) BlockBackfillDepth(lggr logger.L) uint64 {
+	return c.getWithFallback("BlockBackfillDepth", ParseUint64, lggr).(uint64)
 }
 
 // BlockBackfillSkip enables skipping of very long log backfills
-func (c *generalConfig) BlockBackfillSkip() bool {
-	return c.getWithFallback("BlockBackfillSkip", ParseBool).(bool)
+func (c *generalConfig) BlockBackfillSkip(lggr logger.L) bool {
+	return c.getWithFallback("BlockBackfillSkip", ParseBool, lggr).(bool)
 }
 
 // BridgeResponseURL represents the URL for bridges to send a response to.
-func (c *generalConfig) BridgeResponseURL() *url.URL {
-	return c.getWithFallback("BridgeResponseURL", ParseURL).(*url.URL)
+func (c *generalConfig) BridgeResponseURL(lggr logger.L) *url.URL {
+	return c.getWithFallback("BridgeResponseURL", ParseURL, lggr).(*url.URL)
 }
 
 // ClientNodeURL is the URL of the Ethereum node this Chainlink node should connect to.
@@ -467,45 +482,44 @@ func (c *generalConfig) ClientNodeURL() string {
 }
 
 // FeatureUICSAKeys enables the CSA Keys UI Feature.
-func (c *generalConfig) FeatureUICSAKeys() bool {
-	return c.getWithFallback("FeatureUICSAKeys", ParseBool).(bool)
+func (c *generalConfig) FeatureUICSAKeys(lggr logger.L) bool {
+	return c.getWithFallback("FeatureUICSAKeys", ParseBool, lggr).(bool)
 }
 
-func (c *generalConfig) FeatureUIFeedsManager() bool {
-	return c.getWithFallback("FeatureUIFeedsManager", ParseBool).(bool)
+func (c *generalConfig) FeatureUIFeedsManager(lggr logger.L) bool {
+	return c.getWithFallback("FeatureUIFeedsManager", ParseBool, lggr).(bool)
 }
 
-func (c *generalConfig) DatabaseListenerMinReconnectInterval() time.Duration {
-	return c.getWithFallback("DatabaseListenerMinReconnectInterval", ParseDuration).(time.Duration)
+func (c *generalConfig) DatabaseListenerMinReconnectInterval(lggr logger.L) time.Duration {
+	return c.getWithFallback("DatabaseListenerMinReconnectInterval", ParseDuration, lggr).(time.Duration)
 }
 
-func (c *generalConfig) DatabaseListenerMaxReconnectDuration() time.Duration {
-	return c.getWithFallback("DatabaseListenerMaxReconnectDuration", ParseDuration).(time.Duration)
+func (c *generalConfig) DatabaseListenerMaxReconnectDuration(lggr logger.L) time.Duration {
+	return c.getWithFallback("DatabaseListenerMaxReconnectDuration", ParseDuration, lggr).(time.Duration)
 }
 
 // DatabaseBackupMode sets the database backup mode
-func (c *generalConfig) DatabaseBackupMode() DatabaseBackupMode {
-	return c.getWithFallback("DatabaseBackupMode", parseDatabaseBackupMode).(DatabaseBackupMode)
+func (c *generalConfig) DatabaseBackupMode(lggr logger.L) DatabaseBackupMode {
+	return c.getWithFallback("DatabaseBackupMode", parseDatabaseBackupMode, lggr).(DatabaseBackupMode)
 }
 
 // DatabaseBackupFrequency turns on the periodic database backup if set to a positive value
 // DatabaseBackupMode must be then set to a value other than "none"
-func (c *generalConfig) DatabaseBackupFrequency() time.Duration {
-	return c.getWithFallback("DatabaseBackupFrequency", ParseDuration).(time.Duration)
+func (c *generalConfig) DatabaseBackupFrequency(lggr logger.L) time.Duration {
+	return c.getWithFallback("DatabaseBackupFrequency", ParseDuration, lggr).(time.Duration)
 }
 
 // DatabaseBackupURL configures the URL for the database to backup, if it's to be different from the main on
-func (c *generalConfig) DatabaseBackupURL() *url.URL {
+func (c *generalConfig) DatabaseBackupURL() (*url.URL, error) {
 	s := c.viper.GetString(EnvVarName("DatabaseBackupURL"))
 	if s == "" {
-		return nil
+		return nil, nil
 	}
 	uri, err := url.Parse(s)
 	if err != nil {
-		logger.Errorf("invalid database backup url %s", s)
-		return nil
+		return nil, errors.Wrapf(err, "invalid database backup url %s", s)
 	}
-	return uri
+	return uri, nil
 }
 
 // DatabaseBackupDir configures the directory for saving the backup file, if it's to be different from default one located in the RootDir
@@ -514,24 +528,23 @@ func (c *generalConfig) DatabaseBackupDir() string {
 }
 
 // GlobalLockRetryInterval represents how long to wait before trying again to get the global advisory lock.
-func (c *generalConfig) GlobalLockRetryInterval() models.Duration {
-	return models.MustMakeDuration(c.getWithFallback("GlobalLockRetryInterval", ParseDuration).(time.Duration))
+func (c *generalConfig) GlobalLockRetryInterval(lggr logger.L) models.Duration {
+	return models.MustMakeDuration(c.getWithFallback("GlobalLockRetryInterval", ParseDuration, lggr).(time.Duration))
 }
 
 // DatabaseURL configures the URL for chainlink to connect to. This must be
 // a properly formatted URL, with a valid scheme (postgres://)
-func (c *generalConfig) DatabaseURL() url.URL {
+func (c *generalConfig) DatabaseURL() (url.URL, error) {
 	s := c.viper.GetString(EnvVarName("DatabaseURL"))
 	uri, err := url.Parse(s)
 	if err != nil {
-		logger.Error("invalid database url %s", s)
-		return url.URL{}
+		return url.URL{}, errors.Wrapf(err, "invalid database url")
 	}
 	if uri.String() == "" {
-		return *uri
+		return url.URL{}, errors.New("You must set DATABASE_URL env variable. HINT: If you are running this to set up your local test database, try DATABASE_URL=postgresql://postgres@localhost:5432/chainlink_test?sslmode=disable")
 	}
 	static.SetConsumerName(uri, "Default", nil)
-	return *uri
+	return *uri, nil
 }
 
 // MigrateDatabase determines whether the database will be automatically
@@ -541,8 +554,8 @@ func (c *generalConfig) MigrateDatabase() bool {
 }
 
 // DefaultMaxHTTPAttempts defines the limit for HTTP requests.
-func (c *generalConfig) DefaultMaxHTTPAttempts() uint {
-	return uint(c.getWithFallback("DefaultMaxHTTPAttempts", ParseUint64).(uint64))
+func (c *generalConfig) DefaultMaxHTTPAttempts(lggr logger.L) uint {
+	return uint(c.getWithFallback("DefaultMaxHTTPAttempts", ParseUint64, lggr).(uint64))
 }
 
 // DefaultHTTPLimit defines the size limit for HTTP requests and responses
@@ -551,8 +564,8 @@ func (c *generalConfig) DefaultHTTPLimit() int64 {
 }
 
 // DefaultHTTPTimeout defines the default timeout for http requests
-func (c *generalConfig) DefaultHTTPTimeout() models.Duration {
-	return models.MustMakeDuration(c.getWithFallback("DefaultHTTPTimeout", ParseDuration).(time.Duration))
+func (c *generalConfig) DefaultHTTPTimeout(lggr logger.L) models.Duration {
+	return models.MustMakeDuration(c.getWithFallback("DefaultHTTPTimeout", ParseDuration, lggr).(time.Duration))
 }
 
 // DefaultHTTPAllowUnrestrictedNetworkAccess controls whether http requests are unrestricted by default
@@ -572,13 +585,13 @@ func (c *generalConfig) FeatureExternalInitiators() bool {
 }
 
 // FeatureOffchainReporting enables the OCR job type.
-func (c *generalConfig) FeatureOffchainReporting() bool {
-	return c.getWithFallback("FeatureOffchainReporting", ParseBool).(bool)
+func (c *generalConfig) FeatureOffchainReporting(lggr logger.L) bool {
+	return c.getWithFallback("FeatureOffchainReporting", ParseBool, lggr).(bool)
 }
 
 // FeatureOffchainReporting2 enables the OCR2 job type.
-func (c *generalConfig) FeatureOffchainReporting2() bool {
-	return c.getWithFallback("FeatureOffchainReporting2", ParseBool).(bool)
+func (c *generalConfig) FeatureOffchainReporting2(lggr logger.L) bool {
+	return c.getWithFallback("FeatureOffchainReporting2", ParseBool, lggr).(bool)
 }
 
 // FMDefaultTransactionQueueDepth controls the queue size for DropOldestStrategy in Flux Monitor
@@ -599,15 +612,16 @@ func (c *generalConfig) EthereumURL() string {
 }
 
 // EthereumHTTPURL is an optional but recommended url that points to the HTTP port of the primary node
-func (c *generalConfig) EthereumHTTPURL() (uri *url.URL) {
+func (c *generalConfig) EthereumHTTPURL() (uri *url.URL, err error) {
 	urlStr := c.viper.GetString(EnvVarName("EthereumHTTPURL"))
 	if urlStr == "" {
-		return nil
+		return nil, nil
 	}
-	var err error
 	uri, err = url.Parse(urlStr)
-	if err != nil || !(uri.Scheme == "http" || uri.Scheme == "https") {
-		logger.Fatalf("Invalid Ethereum HTTP URL: %s, got error: %s", urlStr, err)
+	if err != nil {
+		return nil, errors.Wrapf(err, "invalid Ethereum HTTP URL: %s", urlStr)
+	} else if !(uri.Scheme == "http" || uri.Scheme == "https") {
+		return nil, fmt.Errorf("invalid Ethereum HTTP URL scheme: %s", urlStr)
 	}
 	return
 }
@@ -615,7 +629,7 @@ func (c *generalConfig) EthereumHTTPURL() (uri *url.URL) {
 // EthereumSecondaryURLs is an optional backup RPC URL
 // Must be http(s) format
 // If specified, transactions will also be broadcast to this ethereum node
-func (c *generalConfig) EthereumSecondaryURLs() []url.URL {
+func (c *generalConfig) EthereumSecondaryURLs() (urls []url.URL, err error) {
 	oldConfig := c.viper.GetString(EnvVarName("EthereumSecondaryURL"))
 	newConfig := c.viper.GetString(EnvVarName("EthereumSecondaryURLs"))
 
@@ -627,19 +641,19 @@ func (c *generalConfig) EthereumSecondaryURLs() []url.URL {
 	}
 
 	urlStrings := regexp.MustCompile(`\s*[;,]\s*`).Split(config, -1)
-	urls := []url.URL{}
 	for _, urlString := range urlStrings {
 		if urlString == "" {
 			continue
 		}
-		url, err := url.Parse(urlString)
-		if err != nil {
-			logger.Fatalf("Invalid Secondary Ethereum URL: %s, got error: %v", urlString, err)
+		url, err2 := url.Parse(urlString)
+		if err2 != nil {
+			err = multierr.Append(err, errors.Wrapf(err2, "Invalid Secondary Ethereum URL: %s", urlString))
+			continue
 		}
 		urls = append(urls, *url)
 	}
 
-	return urls
+	return
 }
 
 // EthereumDisabled will substitute null Eth clients if set
@@ -667,37 +681,37 @@ func (c *generalConfig) InsecureSkipVerify() bool {
 	return c.viper.GetBool(EnvVarName("InsecureSkipVerify"))
 }
 
-func (c *generalConfig) TriggerFallbackDBPollInterval() time.Duration {
-	return c.getWithFallback("TriggerFallbackDBPollInterval", ParseDuration).(time.Duration)
+func (c *generalConfig) TriggerFallbackDBPollInterval(lggr logger.L) time.Duration {
+	return c.getWithFallback("TriggerFallbackDBPollInterval", ParseDuration, lggr).(time.Duration)
 }
 
 // JobPipelineMaxRunDuration is the maximum time that a job run may take
-func (c *generalConfig) JobPipelineMaxRunDuration() time.Duration {
-	return c.getWithFallback("JobPipelineMaxRunDuration", ParseDuration).(time.Duration)
+func (c *generalConfig) JobPipelineMaxRunDuration(lggr logger.L) time.Duration {
+	return c.getWithFallback("JobPipelineMaxRunDuration", ParseDuration, lggr).(time.Duration)
 }
 
-func (c *generalConfig) JobPipelineResultWriteQueueDepth() uint64 {
-	return c.getWithFallback("JobPipelineResultWriteQueueDepth", ParseUint64).(uint64)
+func (c *generalConfig) JobPipelineResultWriteQueueDepth(lggr logger.L) uint64 {
+	return c.getWithFallback("JobPipelineResultWriteQueueDepth", ParseUint64, lggr).(uint64)
 }
 
-func (c *generalConfig) JobPipelineReaperInterval() time.Duration {
-	return c.getWithFallback("JobPipelineReaperInterval", ParseDuration).(time.Duration)
+func (c *generalConfig) JobPipelineReaperInterval(lggr logger.L) time.Duration {
+	return c.getWithFallback("JobPipelineReaperInterval", ParseDuration, lggr).(time.Duration)
 }
 
-func (c *generalConfig) JobPipelineReaperThreshold() time.Duration {
-	return c.getWithFallback("JobPipelineReaperThreshold", ParseDuration).(time.Duration)
+func (c *generalConfig) JobPipelineReaperThreshold(lggr logger.L) time.Duration {
+	return c.getWithFallback("JobPipelineReaperThreshold", ParseDuration, lggr).(time.Duration)
 }
 
 // KeeperRegistryCheckGasOverhead is the amount of extra gas to provide checkUpkeep() calls
 // to account for the gas consumed by the keeper registry
-func (c *generalConfig) KeeperRegistryCheckGasOverhead() uint64 {
-	return c.getWithFallback("KeeperRegistryCheckGasOverhead", ParseUint64).(uint64)
+func (c *generalConfig) KeeperRegistryCheckGasOverhead(lggr logger.L) uint64 {
+	return c.getWithFallback("KeeperRegistryCheckGasOverhead", ParseUint64, lggr).(uint64)
 }
 
 // KeeperRegistryPerformGasOverhead is the amount of extra gas to provide performUpkeep() calls
 // to account for the gas consumed by the keeper registry
-func (c *generalConfig) KeeperRegistryPerformGasOverhead() uint64 {
-	return c.getWithFallback("KeeperRegistryPerformGasOverhead", ParseUint64).(uint64)
+func (c *generalConfig) KeeperRegistryPerformGasOverhead(lggr logger.L) uint64 {
+	return c.getWithFallback("KeeperRegistryPerformGasOverhead", ParseUint64, lggr).(uint64)
 }
 
 // KeeperDefaultTransactionQueueDepth controls the queue size for DropOldestStrategy in Keeper
@@ -720,8 +734,8 @@ func (c *generalConfig) KeeperGasTipCapBufferPercent() uint32 {
 
 // KeeperRegistrySyncInterval is the interval in which the RegistrySynchronizer performs a full
 // sync of the keeper registry contract it is tracking
-func (c *generalConfig) KeeperRegistrySyncInterval() time.Duration {
-	return c.getWithFallback("KeeperRegistrySyncInterval", ParseDuration).(time.Duration)
+func (c *generalConfig) KeeperRegistrySyncInterval(lggr logger.L) time.Duration {
+	return c.getWithFallback("KeeperRegistrySyncInterval", ParseDuration, lggr).(time.Duration)
 }
 
 // KeeperMaximumGracePeriod is the maximum number of blocks that a keeper will wait after performing
@@ -731,8 +745,8 @@ func (c *generalConfig) KeeperMaximumGracePeriod() int64 {
 }
 
 // KeeperRegistrySyncUpkeepQueueSize represents the maximum number of upkeeps that can be synced in parallel
-func (c *generalConfig) KeeperRegistrySyncUpkeepQueueSize() uint32 {
-	return c.getWithFallback("KeeperRegistrySyncUpkeepQueueSize", ParseUint32).(uint32)
+func (c *generalConfig) KeeperRegistrySyncUpkeepQueueSize(lggr logger.L) uint32 {
+	return c.getWithFallback("KeeperRegistrySyncUpkeepQueueSize", ParseUint32, lggr).(uint32)
 }
 
 // JSONConsole when set to true causes logging to be made in JSON format
@@ -742,8 +756,8 @@ func (c *generalConfig) JSONConsole() bool {
 }
 
 // ExplorerURL returns the websocket URL for this node to push stats to, or nil.
-func (c *generalConfig) ExplorerURL() *url.URL {
-	rval := c.getWithFallback("ExplorerURL", ParseURL)
+func (c *generalConfig) ExplorerURL(lggr logger.L) *url.URL {
+	rval := c.getWithFallback("ExplorerURL", ParseURL, lggr)
 	switch t := rval.(type) {
 	case nil:
 		return nil
@@ -765,8 +779,8 @@ func (c *generalConfig) ExplorerSecret() string {
 }
 
 // TelemetryIngressURL returns the WSRPC URL for this node to push telemetry to, or nil.
-func (c *generalConfig) TelemetryIngressURL() *url.URL {
-	rval := c.getWithFallback("TelemetryIngressURL", ParseURL)
+func (c *generalConfig) TelemetryIngressURL(lggr logger.L) *url.URL {
+	rval := c.getWithFallback("TelemetryIngressURL", ParseURL, lggr)
 	switch t := rval.(type) {
 	case nil:
 		return nil
@@ -783,16 +797,16 @@ func (c *generalConfig) TelemetryIngressServerPubKey() string {
 }
 
 // TelemetryIngressLogging toggles very verbose logging of raw telemetry messages for the TelemetryIngressClient
-func (c *generalConfig) TelemetryIngressLogging() bool {
-	return c.getWithFallback("TelemetryIngressLogging", ParseBool).(bool)
+func (c *generalConfig) TelemetryIngressLogging(lggr logger.L) bool {
+	return c.getWithFallback("TelemetryIngressLogging", ParseBool, lggr).(bool)
 }
 
-func (c *generalConfig) ORMMaxOpenConns() int {
-	return int(c.getWithFallback("ORMMaxOpenConns", ParseUint16).(uint16))
+func (c *generalConfig) ORMMaxOpenConns(lggr logger.L) int {
+	return int(c.getWithFallback("ORMMaxOpenConns", ParseUint16, lggr).(uint16))
 }
 
-func (c *generalConfig) ORMMaxIdleConns() int {
-	return int(c.getWithFallback("ORMMaxIdleConns", ParseUint16).(uint16))
+func (c *generalConfig) ORMMaxIdleConns(lggr logger.L) int {
+	return int(c.getWithFallback("ORMMaxIdleConns", ParseUint16, lggr).(uint16))
 }
 
 // LogLevel represents the maximum level of log messages to output.
@@ -845,35 +859,31 @@ func (c *generalConfig) LogUnixTimestamps() bool {
 }
 
 // Port represents the port Chainlink should listen on for client requests.
-func (c *generalConfig) Port() uint16 {
-	return c.getWithFallback("Port", ParseUint16).(uint16)
+func (c *generalConfig) Port(lggr logger.L) uint16 {
+	return c.getWithFallback("Port", ParseUint16, lggr).(uint16)
 }
 
 // DefaultChainID represents the chain ID which jobs will use if one is not explicitly specified
-func (c *generalConfig) DefaultChainID() *big.Int {
+func (c *generalConfig) DefaultChainID() (*big.Int, error) {
 	str := c.viper.GetString(EnvVarName("DefaultChainID"))
 	if str != "" {
 		v, err := ParseBigInt(str)
 		if err != nil {
-			logger.Errorw(
-				"Ignoring invalid value provided for ETH_CHAIN_ID",
-				"value", str,
-				"error", err)
-			return nil
+			return nil, errors.Wrapf(err, "Ignoring invalid value provided for ETH_CHAIN_ID (%s)", str)
 		}
-		return v.(*big.Int)
+		return v.(*big.Int), nil
 
 	}
-	return nil
+	return nil, nil
 }
 
-func (c *generalConfig) HTTPServerWriteTimeout() time.Duration {
-	return c.getWithFallback("HTTPServerWriteTimeout", ParseDuration).(time.Duration)
+func (c *generalConfig) HTTPServerWriteTimeout(lggr logger.L) time.Duration {
+	return c.getWithFallback("HTTPServerWriteTimeout", ParseDuration, lggr).(time.Duration)
 }
 
 // ReaperExpiration represents
-func (c *generalConfig) ReaperExpiration() models.Duration {
-	return models.MustMakeDuration(c.getWithFallback("ReaperExpiration", ParseDuration).(time.Duration))
+func (c *generalConfig) ReaperExpiration(lggr logger.L) models.Duration {
+	return models.MustMakeDuration(c.getWithFallback("ReaperExpiration", ParseDuration, lggr).(time.Duration))
 }
 
 func (c *generalConfig) ReplayFromBlock() int64 {
@@ -882,8 +892,8 @@ func (c *generalConfig) ReplayFromBlock() int64 {
 
 // RootDir represents the location on the file system where Chainlink should
 // keep its files.
-func (c *generalConfig) RootDir() string {
-	return c.getWithFallback("RootDir", ParseHomeDir).(string)
+func (c *generalConfig) RootDir(lggr logger.L) string {
+	return c.getWithFallback("RootDir", ParseHomeDir, lggr).(string)
 }
 
 // RPID Fetches the RPID used for WebAuthn sessions. The RPID value should be the FQDN (localhost)
@@ -903,13 +913,13 @@ func (c *generalConfig) SecureCookies() bool {
 }
 
 // SessionTimeout is the maximum duration that a user session can persist without any activity.
-func (c *generalConfig) SessionTimeout() models.Duration {
-	return models.MustMakeDuration(c.getWithFallback("SessionTimeout", ParseDuration).(time.Duration))
+func (c *generalConfig) SessionTimeout(lggr logger.L) models.Duration {
+	return models.MustMakeDuration(c.getWithFallback("SessionTimeout", ParseDuration, lggr).(time.Duration))
 }
 
 // StatsPusherLogging toggles very verbose logging of raw messages for the StatsPusher (also telemetry)
-func (c *generalConfig) StatsPusherLogging() bool {
-	return c.getWithFallback("StatsPusherLogging", ParseBool).(bool)
+func (c *generalConfig) StatsPusherLogging(lggr logger.L) bool {
+	return c.getWithFallback("StatsPusherLogging", ParseBool, lggr).(bool)
 }
 
 // TLSCertPath represents the file system location of the TLS certificate
@@ -931,8 +941,8 @@ func (c *generalConfig) TLSKeyPath() string {
 }
 
 // TLSPort represents the port Chainlink should listen on for encrypted client requests.
-func (c *generalConfig) TLSPort() uint16 {
-	return c.getWithFallback("TLSPort", ParseUint16).(uint16)
+func (c *generalConfig) TLSPort(lggr logger.L) uint16 {
+	return c.getWithFallback("TLSPort", ParseUint16, lggr).(uint16)
 }
 
 // TLSRedirect forces TLS redirect for unencrypted connections
@@ -946,34 +956,34 @@ func (c *generalConfig) UnAuthenticatedRateLimit() int64 {
 }
 
 // UnAuthenticatedRateLimitPeriod defines the period to which unauthenticated requests get limited
-func (c *generalConfig) UnAuthenticatedRateLimitPeriod() models.Duration {
-	return models.MustMakeDuration(c.getWithFallback("UnAuthenticatedRateLimitPeriod", ParseDuration).(time.Duration))
+func (c *generalConfig) UnAuthenticatedRateLimitPeriod(lggr logger.L) models.Duration {
+	return models.MustMakeDuration(c.getWithFallback("UnAuthenticatedRateLimitPeriod", ParseDuration, lggr).(time.Duration))
 }
 
-func (c *generalConfig) TLSDir() string {
-	return filepath.Join(c.RootDir(), "tls")
+func (c *generalConfig) TLSDir(lggr logger.L) string {
+	return filepath.Join(c.RootDir(lggr), "tls")
 }
 
 // KeyFile returns the path where the server key is kept
-func (c *generalConfig) KeyFile() string {
+func (c *generalConfig) KeyFile(lggr logger.L) string {
 	if c.TLSKeyPath() == "" {
-		return filepath.Join(c.TLSDir(), "server.key")
+		return filepath.Join(c.TLSDir(lggr), "server.key")
 	}
 	return c.TLSKeyPath()
 }
 
 // CertFile returns the path where the server certificate is kept
-func (c *generalConfig) CertFile() string {
+func (c *generalConfig) CertFile(lggr logger.L) string {
 	if c.TLSCertPath() == "" {
-		return filepath.Join(c.TLSDir(), "server.crt")
+		return filepath.Join(c.TLSDir(lggr), "server.crt")
 	}
 	return c.TLSCertPath()
 }
 
 // SessionSecret returns a sequence of bytes to be used as a private key for
 // session signing or encryption.
-func (c *generalConfig) SessionSecret() ([]byte, error) {
-	return c.secretGenerator.Generate(c.RootDir())
+func (c *generalConfig) SessionSecret(lggr logger.L) ([]byte, error) {
+	return c.secretGenerator.Generate(c.RootDir(lggr))
 }
 
 // SessionOptions returns the sessions.Options struct used to configure
@@ -986,7 +996,9 @@ func (c *generalConfig) SessionOptions() sessions.Options {
 	}
 }
 
-func (c *generalConfig) getWithFallback(name string, parser func(string) (interface{}, error)) interface{} {
+// getWithFallback looks up the env var for name, falling back to the default or zero value if unset.
+// Invalid user values are reported to lggr if provided.
+func (c *generalConfig) getWithFallback(name string, parser func(string) (interface{}, error), lggr logger.L) interface{} {
 	str := c.viper.GetString(EnvVarName(name))
 	defaultValue, hasDefault := defaultValue(name)
 	if str != "" {
@@ -994,11 +1006,20 @@ func (c *generalConfig) getWithFallback(name string, parser func(string) (interf
 		if err == nil {
 			return v
 		}
-		logger.Errorw(
-			fmt.Sprintf("Invalid value provided for %s, falling back to default.", name),
-			"value", str,
-			"default", defaultValue,
-			"error", err)
+		if lggr != nil {
+			if hasDefault {
+				lggr.Errorw(
+					fmt.Sprintf("Invalid value provided for %s, falling back to default.", name),
+					"value", str,
+					"default", defaultValue,
+					"error", err)
+			} else {
+				lggr.Errorw(
+					fmt.Sprintf("Invalid value provided for %s, falling back to zero value.", name),
+					"value", str,
+					"error", err)
+			}
+		}
 	}
 
 	if !hasDefault {
@@ -1034,16 +1055,20 @@ func parseDatabaseBackupMode(s string) (interface{}, error) {
 	}
 }
 
-func lookupEnv(k string, parse func(string) (interface{}, error)) (interface{}, bool) {
+// lookupEnv gets and parses the env var k if set.
+// Invalid values are reported on lggr if provided.
+func lookupEnv(k string, parse func(string) (interface{}, error), lggr logger.L) (interface{}, bool) {
 	s, ok := os.LookupEnv(k)
 	if ok {
 		val, err := parse(s)
 		if err != nil {
-			logger.Errorw(
-				fmt.Sprintf("Invalid value provided for %s, falling back to default.", s),
-				"value", s,
-				"key", k,
-				"error", err)
+			if lggr != nil {
+				lggr.Errorw(
+					fmt.Sprintf("Invalid value provided for %s.", s),
+					"value", s,
+					"key", k,
+					"error", err)
+			}
 			return nil, false
 		}
 		return val, true
@@ -1053,274 +1078,274 @@ func lookupEnv(k string, parse func(string) (interface{}, error)) (interface{}, 
 
 // EVM methods
 
-func (*generalConfig) GlobalBalanceMonitorEnabled() (bool, bool) {
-	val, ok := lookupEnv(EnvVarName("BalanceMonitorEnabled"), ParseBool)
+func (*generalConfig) GlobalBalanceMonitorEnabled(lggr logger.L) (bool, bool) {
+	val, ok := lookupEnv(EnvVarName("BalanceMonitorEnabled"), ParseBool, lggr)
 	if val == nil {
 		return false, false
 	}
 	return val.(bool), ok
 }
-func (*generalConfig) GlobalBlockEmissionIdleWarningThreshold() (time.Duration, bool) {
-	val, ok := lookupEnv(EnvVarName("BlockEmissionIdleWarningThreshold"), ParseDuration)
+func (*generalConfig) GlobalBlockEmissionIdleWarningThreshold(lggr logger.L) (time.Duration, bool) {
+	val, ok := lookupEnv(EnvVarName("BlockEmissionIdleWarningThreshold"), ParseDuration, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(time.Duration), ok
 }
-func (*generalConfig) GlobalBlockHistoryEstimatorBatchSize() (uint32, bool) {
-	val, ok := lookupEnv(EnvVarName("BlockHistoryEstimatorBatchSize"), ParseUint32)
+func (*generalConfig) GlobalBlockHistoryEstimatorBatchSize(lggr logger.L) (uint32, bool) {
+	val, ok := lookupEnv(EnvVarName("BlockHistoryEstimatorBatchSize"), ParseUint32, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint32), ok
 }
-func (*generalConfig) GlobalBlockHistoryEstimatorBlockDelay() (uint16, bool) {
-	val, ok := lookupEnv(EnvVarName("BlockHistoryEstimatorBlockDelay"), ParseUint16)
+func (*generalConfig) GlobalBlockHistoryEstimatorBlockDelay(lggr logger.L) (uint16, bool) {
+	val, ok := lookupEnv(EnvVarName("BlockHistoryEstimatorBlockDelay"), ParseUint16, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint16), ok
 }
-func (*generalConfig) GlobalBlockHistoryEstimatorBlockHistorySize() (uint16, bool) {
-	val, ok := lookupEnv(EnvVarName("BlockHistoryEstimatorBlockHistorySize"), ParseUint16)
+func (*generalConfig) GlobalBlockHistoryEstimatorBlockHistorySize(lggr logger.L) (uint16, bool) {
+	val, ok := lookupEnv(EnvVarName("BlockHistoryEstimatorBlockHistorySize"), ParseUint16, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint16), ok
 }
-func (*generalConfig) GlobalBlockHistoryEstimatorTransactionPercentile() (uint16, bool) {
-	val, ok := lookupEnv(EnvVarName("BlockHistoryEstimatorTransactionPercentile"), ParseUint16)
+func (*generalConfig) GlobalBlockHistoryEstimatorTransactionPercentile(lggr logger.L) (uint16, bool) {
+	val, ok := lookupEnv(EnvVarName("BlockHistoryEstimatorTransactionPercentile"), ParseUint16, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint16), ok
 }
-func (*generalConfig) GlobalEthTxReaperInterval() (time.Duration, bool) {
-	val, ok := lookupEnv(EnvVarName("EthTxReaperInterval"), ParseDuration)
+func (*generalConfig) GlobalEthTxReaperInterval(lggr logger.L) (time.Duration, bool) {
+	val, ok := lookupEnv(EnvVarName("EthTxReaperInterval"), ParseDuration, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(time.Duration), ok
 }
-func (*generalConfig) GlobalEthTxReaperThreshold() (time.Duration, bool) {
-	val, ok := lookupEnv(EnvVarName("EthTxReaperThreshold"), ParseDuration)
+func (*generalConfig) GlobalEthTxReaperThreshold(lggr logger.L) (time.Duration, bool) {
+	val, ok := lookupEnv(EnvVarName("EthTxReaperThreshold"), ParseDuration, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(time.Duration), ok
 }
-func (*generalConfig) GlobalEthTxResendAfterThreshold() (time.Duration, bool) {
-	val, ok := lookupEnv(EnvVarName("EthTxResendAfterThreshold"), ParseDuration)
+func (*generalConfig) GlobalEthTxResendAfterThreshold(lggr logger.L) (time.Duration, bool) {
+	val, ok := lookupEnv(EnvVarName("EthTxResendAfterThreshold"), ParseDuration, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(time.Duration), ok
 }
-func (*generalConfig) GlobalEvmDefaultBatchSize() (uint32, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmDefaultBatchSize"), ParseUint32)
+func (*generalConfig) GlobalEvmDefaultBatchSize(lggr logger.L) (uint32, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmDefaultBatchSize"), ParseUint32, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint32), ok
 }
-func (*generalConfig) GlobalEvmFinalityDepth() (uint32, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmFinalityDepth"), ParseUint32)
+func (*generalConfig) GlobalEvmFinalityDepth(lggr logger.L) (uint32, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmFinalityDepth"), ParseUint32, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint32), ok
 }
-func (*generalConfig) GlobalEvmGasBumpPercent() (uint16, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmGasBumpPercent"), ParseUint16)
+func (*generalConfig) GlobalEvmGasBumpPercent(lggr logger.L) (uint16, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmGasBumpPercent"), ParseUint16, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint16), ok
 }
-func (*generalConfig) GlobalEvmGasBumpThreshold() (uint64, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmGasBumpThreshold"), ParseUint64)
+func (*generalConfig) GlobalEvmGasBumpThreshold(lggr logger.L) (uint64, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmGasBumpThreshold"), ParseUint64, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint64), ok
 }
-func (*generalConfig) GlobalEvmGasBumpTxDepth() (uint16, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmGasBumpTxDepth"), ParseUint16)
+func (*generalConfig) GlobalEvmGasBumpTxDepth(lggr logger.L) (uint16, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmGasBumpTxDepth"), ParseUint16, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint16), ok
 }
-func (*generalConfig) GlobalEvmGasBumpWei() (*big.Int, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmGasBumpWei"), ParseBigInt)
+func (*generalConfig) GlobalEvmGasBumpWei(lggr logger.L) (*big.Int, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmGasBumpWei"), ParseBigInt, lggr)
 	if val == nil {
 		return nil, false
 	}
 	return val.(*big.Int), ok
 }
-func (*generalConfig) GlobalEvmGasLimitDefault() (uint64, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmGasLimitDefault"), ParseUint64)
+func (*generalConfig) GlobalEvmGasLimitDefault(lggr logger.L) (uint64, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmGasLimitDefault"), ParseUint64, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint64), ok
 }
-func (*generalConfig) GlobalEvmGasLimitMultiplier() (float32, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmGasLimitMultiplier"), ParseF32)
+func (*generalConfig) GlobalEvmGasLimitMultiplier(lggr logger.L) (float32, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmGasLimitMultiplier"), ParseF32, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(float32), ok
 }
-func (*generalConfig) GlobalEvmGasLimitTransfer() (uint64, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmGasLimitTransfer"), ParseUint64)
+func (*generalConfig) GlobalEvmGasLimitTransfer(lggr logger.L) (uint64, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmGasLimitTransfer"), ParseUint64, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint64), ok
 }
-func (*generalConfig) GlobalEvmGasPriceDefault() (*big.Int, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmGasPriceDefault"), ParseBigInt)
+func (*generalConfig) GlobalEvmGasPriceDefault(lggr logger.L) (*big.Int, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmGasPriceDefault"), ParseBigInt, lggr)
 	if val == nil {
 		return nil, false
 	}
 	return val.(*big.Int), ok
 }
-func (*generalConfig) GlobalEvmHeadTrackerHistoryDepth() (uint32, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmHeadTrackerHistoryDepth"), ParseUint32)
+func (*generalConfig) GlobalEvmHeadTrackerHistoryDepth(lggr logger.L) (uint32, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmHeadTrackerHistoryDepth"), ParseUint32, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint32), ok
 }
-func (*generalConfig) GlobalEvmHeadTrackerMaxBufferSize() (uint32, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmHeadTrackerMaxBufferSize"), ParseUint32)
+func (*generalConfig) GlobalEvmHeadTrackerMaxBufferSize(lggr logger.L) (uint32, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmHeadTrackerMaxBufferSize"), ParseUint32, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint32), ok
 }
-func (*generalConfig) GlobalEvmHeadTrackerSamplingInterval() (time.Duration, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmHeadTrackerSamplingInterval"), ParseDuration)
+func (*generalConfig) GlobalEvmHeadTrackerSamplingInterval(lggr logger.L) (time.Duration, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmHeadTrackerSamplingInterval"), ParseDuration, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(time.Duration), ok
 }
-func (*generalConfig) GlobalEvmLogBackfillBatchSize() (uint32, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmLogBackfillBatchSize"), ParseUint32)
+func (*generalConfig) GlobalEvmLogBackfillBatchSize(lggr logger.L) (uint32, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmLogBackfillBatchSize"), ParseUint32, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint32), ok
 }
-func (*generalConfig) GlobalEvmMaxGasPriceWei() (*big.Int, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmMaxGasPriceWei"), ParseBigInt)
+func (*generalConfig) GlobalEvmMaxGasPriceWei(lggr logger.L) (*big.Int, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmMaxGasPriceWei"), ParseBigInt, lggr)
 	if val == nil {
 		return nil, false
 	}
 	return val.(*big.Int), ok
 }
-func (*generalConfig) GlobalEvmMaxInFlightTransactions() (uint32, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmMaxInFlightTransactions"), ParseUint32)
+func (*generalConfig) GlobalEvmMaxInFlightTransactions(lggr logger.L) (uint32, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmMaxInFlightTransactions"), ParseUint32, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint32), ok
 }
-func (*generalConfig) GlobalEvmMaxQueuedTransactions() (uint64, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmMaxQueuedTransactions"), ParseUint64)
+func (*generalConfig) GlobalEvmMaxQueuedTransactions(lggr logger.L) (uint64, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmMaxQueuedTransactions"), ParseUint64, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint64), ok
 }
-func (*generalConfig) GlobalEvmMinGasPriceWei() (*big.Int, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmMinGasPriceWei"), ParseBigInt)
+func (*generalConfig) GlobalEvmMinGasPriceWei(lggr logger.L) (*big.Int, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmMinGasPriceWei"), ParseBigInt, lggr)
 	if val == nil {
 		return nil, false
 	}
 	return val.(*big.Int), ok
 }
-func (*generalConfig) GlobalEvmNonceAutoSync() (bool, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmNonceAutoSync"), ParseBool)
+func (*generalConfig) GlobalEvmNonceAutoSync(lggr logger.L) (bool, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmNonceAutoSync"), ParseBool, lggr)
 	if val == nil {
 		return false, false
 	}
 	return val.(bool), ok
 }
-func (*generalConfig) GlobalEvmRPCDefaultBatchSize() (uint32, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmRPCDefaultBatchSize"), ParseUint32)
+func (*generalConfig) GlobalEvmRPCDefaultBatchSize(lggr logger.L) (uint32, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmRPCDefaultBatchSize"), ParseUint32, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint32), ok
 }
 func (*generalConfig) GlobalFlagsContractAddress() (string, bool) {
-	val, ok := lookupEnv(EnvVarName("FlagsContractAddress"), ParseString)
+	val, ok := lookupEnv(EnvVarName("FlagsContractAddress"), ParseString, nil)
 	if val == nil {
 		return "", false
 	}
 	return val.(string), ok
 }
 func (*generalConfig) GlobalGasEstimatorMode() (string, bool) {
-	val, ok := lookupEnv(EnvVarName("GasEstimatorMode"), ParseString)
+	val, ok := lookupEnv(EnvVarName("GasEstimatorMode"), ParseString, nil)
 	if val == nil {
 		return "", false
 	}
 	return val.(string), ok
 }
 func (*generalConfig) GlobalChainType() (string, bool) {
-	val, ok := lookupEnv(EnvVarName("ChainType"), ParseString)
+	val, ok := lookupEnv(EnvVarName("ChainType"), ParseString, nil)
 	if val == nil {
 		return "", false
 	}
 	return val.(string), ok
 }
 func (*generalConfig) GlobalLinkContractAddress() (string, bool) {
-	val, ok := lookupEnv(EnvVarName("LinkContractAddress"), ParseString)
+	val, ok := lookupEnv(EnvVarName("LinkContractAddress"), ParseString, nil)
 	if val == nil {
 		return "", false
 	}
 	return val.(string), ok
 }
-func (*generalConfig) GlobalMinIncomingConfirmations() (uint32, bool) {
-	val, ok := lookupEnv(EnvVarName("MinIncomingConfirmations"), ParseUint32)
+func (*generalConfig) GlobalMinIncomingConfirmations(lggr logger.L) (uint32, bool) {
+	val, ok := lookupEnv(EnvVarName("MinIncomingConfirmations"), ParseUint32, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint32), ok
 }
-func (*generalConfig) GlobalMinRequiredOutgoingConfirmations() (uint64, bool) {
-	val, ok := lookupEnv(EnvVarName("MinRequiredOutgoingConfirmations"), ParseUint64)
+func (*generalConfig) GlobalMinRequiredOutgoingConfirmations(lggr logger.L) (uint64, bool) {
+	val, ok := lookupEnv(EnvVarName("MinRequiredOutgoingConfirmations"), ParseUint64, lggr)
 	if val == nil {
 		return 0, false
 	}
 	return val.(uint64), ok
 }
-func (*generalConfig) GlobalMinimumContractPayment() (*assets.Link, bool) {
-	val, ok := lookupEnv(EnvVarName("MinimumContractPayment"), ParseLink)
+func (*generalConfig) GlobalMinimumContractPayment(lggr logger.L) (*assets.Link, bool) {
+	val, ok := lookupEnv(EnvVarName("MinimumContractPayment"), ParseLink, lggr)
 	if val == nil {
 		return nil, false
 	}
 	return val.(*assets.Link), ok
 }
-func (*generalConfig) GlobalEvmEIP1559DynamicFees() (bool, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmEIP1559DynamicFees"), ParseBool)
+func (*generalConfig) GlobalEvmEIP1559DynamicFees(lggr logger.L) (bool, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmEIP1559DynamicFees"), ParseBool, lggr)
 	if val == nil {
 		return false, false
 	}
 	return val.(bool), ok
 }
-func (*generalConfig) GlobalEvmGasTipCapDefault() (*big.Int, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmGasTipCapDefault"), ParseBigInt)
+func (*generalConfig) GlobalEvmGasTipCapDefault(lggr logger.L) (*big.Int, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmGasTipCapDefault"), ParseBigInt, lggr)
 	if val == nil {
 		return nil, false
 	}
 	return val.(*big.Int), ok
 }
-func (*generalConfig) GlobalEvmGasTipCapMinimum() (*big.Int, bool) {
-	val, ok := lookupEnv(EnvVarName("EvmGasTipCapMinimum"), ParseBigInt)
+func (*generalConfig) GlobalEvmGasTipCapMinimum(lggr logger.L) (*big.Int, bool) {
+	val, ok := lookupEnv(EnvVarName("EvmGasTipCapMinimum"), ParseBigInt, lggr)
 	if val == nil {
 		return nil, false
 	}
@@ -1335,18 +1360,18 @@ func (c *generalConfig) UseLegacyEthEnvVars() bool {
 
 // DatabaseLockingMode can be one of 'dual', 'advisorylock', 'lease' or 'none'
 // It controls which mode to use to enforce that only one Chainlink application can use the database
-func (c *generalConfig) DatabaseLockingMode() string {
-	return c.getWithFallback("DatabaseLockingMode", ParseString).(string)
+func (c *generalConfig) DatabaseLockingMode(lggr logger.L) string {
+	return c.getWithFallback("DatabaseLockingMode", ParseString, lggr).(string)
 }
 
 // LeaseLockRefreshInterval controls how often the node should attempt to
 // refresh the lease lock
-func (c *generalConfig) LeaseLockRefreshInterval() time.Duration {
-	return c.getDuration("LeaseLockRefreshInterval")
+func (c *generalConfig) LeaseLockRefreshInterval(lggr logger.L) time.Duration {
+	return c.getDuration("LeaseLockRefreshInterval", lggr)
 }
 
 // LeaseLockDuration controls when the lock is set to expire on each refresh
 // (this many seconds from now in the future)
-func (c *generalConfig) LeaseLockDuration() time.Duration {
-	return c.getDuration("LeaseLockDuration")
+func (c *generalConfig) LeaseLockDuration(lggr logger.L) time.Duration {
+	return c.getDuration("LeaseLockDuration", lggr)
 }

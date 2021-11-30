@@ -12,12 +12,12 @@ func NewFeaturesResolver(cfg config.GeneralConfig) *FeaturesResolver {
 
 // CSA resolves to whether CSA Keys are enabled
 func (r *FeaturesResolver) CSA() bool {
-	return r.cfg.FeatureUICSAKeys()
+	return r.cfg.FeatureUICSAKeys(nil)
 }
 
 // FeedsManager resolves to whether the Feeds Manager is enabled for the UI
 func (r *FeaturesResolver) FeedsManager() bool {
-	return r.cfg.FeatureUIFeedsManager()
+	return r.cfg.FeatureUIFeedsManager(nil)
 }
 
 type FeaturesPayloadResolver struct {

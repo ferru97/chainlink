@@ -78,7 +78,7 @@ func (d Delegate) ServicesForSpec(jobSpec job.Job) (services []job.Service, err 
 	if err != nil {
 		return nil, err
 	}
-	concreteSpec, err := job.LoadEnvConfigVarsOCR(chain.Config(), d.keyStore.P2P(), *jobSpec.OffchainreportingOracleSpec)
+	concreteSpec, err := job.LoadEnvConfigVarsOCR(chain.Config(), d.keyStore.P2P(), *jobSpec.OffchainreportingOracleSpec, d.lggr)
 	if err != nil {
 		return nil, err
 	}
@@ -131,7 +131,10 @@ func (d Delegate) ServicesForSpec(jobSpec job.Job) (services []job.Service, err 
 		}
 	}
 	// TODO: May want to follow up with spec override support for v2 bootstrappers?
-	v2BootstrapPeers := chain.Config().P2PV2Bootstrappers()
+	v2BootstrapPeers, err := chain.Config().P2PV2Bootstrappers()
+	if err != nil {
+		d.lggr.Fatal(err)
+	}
 
 	loggerWith := d.lggr.With(
 		"contractAddress", concreteSpec.ContractAddress,
@@ -142,7 +145,7 @@ func (d Delegate) ServicesForSpec(jobSpec job.Job) (services []job.Service, err 
 		d.jobORM.TryRecordError(jobSpec.ID, msg)
 	})
 
-	lc := NewLocalConfig(chain.Config(), *concreteSpec)
+	lc := NewLocalConfig(chain.Config(), *concreteSpec, loggerWith)
 	if err = ocr.SanityCheckLocalConfig(lc); err != nil {
 		return nil, err
 	}
@@ -189,7 +192,7 @@ func (d Delegate) ServicesForSpec(jobSpec job.Job) (services []job.Service, err 
 			chain.ID(),
 		)
 
-		runResults := make(chan pipeline.Run, chain.Config().JobPipelineResultWriteQueueDepth())
+		runResults := make(chan pipeline.Run, chain.Config().JobPipelineResultWriteQueueDepth(loggerWith))
 		jobSpec.PipelineSpec.JobName = jobSpec.Name.ValueOrZero()
 		jobSpec.PipelineSpec.JobID = jobSpec.ID
 

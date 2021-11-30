@@ -944,7 +944,7 @@ func (r *Resolver) CreateJob(ctx context.Context, args struct {
 	switch jbt {
 	case job.OffchainReporting:
 		jb, err = offchainreporting.ValidatedOracleSpecToml(r.App.GetChainSet(), args.Input.TOML)
-		if !config.Dev() && !config.FeatureOffchainReporting() {
+		if !config.Dev() && !config.FeatureOffchainReporting(r.App.GetLogger()) {
 			return nil, errors.New("The Offchain Reporting feature is disabled by configuration")
 		}
 	case job.DirectRequest:

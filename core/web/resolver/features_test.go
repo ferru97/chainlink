@@ -1,6 +1,10 @@
 package resolver
 
-import "testing"
+import (
+	"testing"
+
+	"github.com/stretchr/testify/mock"
+)
 
 func Test_ToFeatures(t *testing.T) {
 	query := `
@@ -20,8 +24,8 @@ func Test_ToFeatures(t *testing.T) {
 			authenticated: true,
 			before: func(f *gqlTestFramework) {
 				f.App.On("GetConfig").Return(f.Mocks.cfg)
-				f.Mocks.cfg.On("FeatureUICSAKeys").Return(false)
-				f.Mocks.cfg.On("FeatureUIFeedsManager").Return(true)
+				f.Mocks.cfg.On("FeatureUICSAKeys", mock.Anything).Return(false)
+				f.Mocks.cfg.On("FeatureUIFeedsManager", mock.Anything).Return(true)
 			},
 			query: query,
 			result: `

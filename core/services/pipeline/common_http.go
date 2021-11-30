@@ -33,7 +33,7 @@ func makeHTTPRequest(
 		bodyReader = bytes.NewReader(bodyBytes)
 	}
 
-	timeoutCtx, cancel := context.WithTimeout(ctx, cfg.DefaultHTTPTimeout().Duration())
+	timeoutCtx, cancel := context.WithTimeout(ctx, cfg.DefaultHTTPTimeout(nil).Duration())
 	defer cancel()
 
 	request, err := http.NewRequestWithContext(timeoutCtx, string(method), url.String(), bodyReader)

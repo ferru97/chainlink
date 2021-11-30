@@ -3,6 +3,8 @@ package offchainreporting2
 import (
 	"time"
 
+	"github.com/smartcontractkit/chainlink/core/logger"
+
 	"github.com/lib/pq"
 
 	"github.com/multiformats/go-multiaddr"
@@ -17,11 +19,11 @@ import (
 
 type ValidationConfig interface {
 	Dev() bool
-	OCR2BlockchainTimeout() time.Duration
+	OCR2BlockchainTimeout(logger.L) time.Duration
 	OCR2ContractConfirmations() uint16
-	OCR2ContractPollInterval() time.Duration
-	OCR2ContractTransmitterTransmitTimeout() time.Duration
-	OCR2DatabaseTimeout() time.Duration
+	OCR2ContractPollInterval(logger.L) time.Duration
+	OCR2ContractTransmitterTransmitTimeout(logger.L) time.Duration
+	OCR2DatabaseTimeout(logger.L) time.Duration
 }
 
 // ValidatedOracleSpecToml validates an oracle spec that came from TOML

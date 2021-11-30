@@ -456,7 +456,7 @@ func TestBulletproofTxManager_Lifecycle(t *testing.T) {
 	kst.On("GetStatesForChain", &cltest.FixtureChainID).Return([]ethkey.State{keyState}, nil).Once()
 	sub.On("Close").Return()
 	ethClient.On("PendingNonceAt", mock.AnythingOfType("*context.timerCtx"), keyState.Address.Address()).Return(uint64(0), nil)
-	config.On("TriggerFallbackDBPollInterval").Return(1 * time.Hour)
+	config.On("TriggerFallbackDBPollInterval", mock.Anything).Return(1 * time.Hour)
 	keyChangeCh <- struct{}{}
 
 	require.NoError(t, bptxm.Close())

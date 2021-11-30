@@ -100,8 +100,8 @@ type (
 	}
 
 	Config interface {
-		BlockBackfillDepth() uint64
-		BlockBackfillSkip() bool
+		BlockBackfillDepth(logger.L) uint64
+		BlockBackfillSkip(logger.L) bool
 		EvmFinalityDepth() uint32
 		EvmLogBackfillBatchSize() uint32
 	}
@@ -244,7 +244,7 @@ func (b *broadcaster) startResubscribeLoop() {
 	var subscription managedSubscription = newNoopSubscription()
 	defer func() { subscription.Unsubscribe() }()
 
-	if b.config.BlockBackfillSkip() && b.highestSavedHead != nil {
+	if b.config.BlockBackfillSkip(b.logger) && b.highestSavedHead != nil {
 		b.logger.Warn("BlockBackfillSkip is set to true, preventing a deep backfill - some earlier chain events might be missed.")
 	} else if b.highestSavedHead != nil {
 		// The backfill needs to start at an earlier block than the one last saved in DB, to account for:
@@ -255,7 +255,7 @@ func (b *broadcaster) startResubscribeLoop() {
 		//   using BlockBackfillDepth makes sure the backfill will be dependent on the per-chain configuration
 		from := b.highestSavedHead.Number -
 			int64(b.registrations.highestNumConfirmations) -
-			int64(b.config.BlockBackfillDepth())
+			int64(b.config.BlockBackfillDepth(b.logger))
 		if from < 0 {
 			from = 0
 		}
@@ -285,7 +285,7 @@ func (b *broadcaster) startResubscribeLoop() {
 			b.logger.Debugw("Using an override as a start of the backfill",
 				"blockNumber", b.backfillBlockNumber.Int64,
 				"highestNumConfirmations", b.registrations.highestNumConfirmations,
-				"blockBackfillDepth", b.config.BlockBackfillDepth(),
+				"blockBackfillDepth", b.config.BlockBackfillDepth(nil),
 			)
 		}
 

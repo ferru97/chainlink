@@ -4,12 +4,13 @@ import (
 	"time"
 
 	"github.com/smartcontractkit/chainlink/core/assets"
+	"github.com/smartcontractkit/chainlink/core/logger"
 	"github.com/smartcontractkit/chainlink/core/store/models"
 )
 
 // Config defines the Flux Monitor configuration.
 type Config interface {
-	DefaultHTTPTimeout() models.Duration
+	DefaultHTTPTimeout(logger.L) models.Duration
 	FlagsContractAddress() string
 	MinimumContractPayment() *assets.Link
 	EvmGasLimitDefault() uint64
@@ -20,5 +21,5 @@ type Config interface {
 
 // MinimumPollingInterval returns the minimum duration between polling ticks
 func MinimumPollingInterval(c Config) time.Duration {
-	return c.DefaultHTTPTimeout().Duration()
+	return c.DefaultHTTPTimeout(nil).Duration()
 }

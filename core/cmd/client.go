@@ -146,29 +146,33 @@ func AdvisoryLock(ctx context.Context, lggr logger.Logger, db *sql.DB, timeout t
 
 // NewApplication returns a new instance of the node with the given config.
 func (n ChainlinkAppFactory) NewApplication(cfg config.GeneralConfig) (chainlink.Application, error) {
-	appLggr := logger.NewLogger(cfg)
+	lggr := logger.NewLogger(cfg)
 	appID := uuid.NewV4()
 
 	shutdownSignal := shutdown.NewSignal()
-	uri := cfg.DatabaseURL()
+	uri, err := cfg.DatabaseURL()
+	if err != nil {
+		return nil, err
+	}
 	static.SetConsumerName(&uri, "App", &appID)
 	dialect := cfg.GetDatabaseDialectConfiguredOrDefault()
 	db, err := pg.NewConnection(uri.String(), string(dialect), pg.Config{
-		Logger:       appLggr,
-		MaxOpenConns: cfg.ORMMaxOpenConns(),
-		MaxIdleConns: cfg.ORMMaxIdleConns(),
+		Logger:       lggr,
+		MaxOpenConns: cfg.ORMMaxOpenConns(nil),
+		MaxIdleConns: cfg.ORMMaxIdleConns(nil),
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	appLggr.Debugf("Using database locking mode: %s", cfg.DatabaseLockingMode())
+	dbLockingMode := cfg.DatabaseLockingMode(lggr)
+	lggr.Debugf("Using database locking mode: %s", dbLockingMode)
 
 	// Lease will be explicitly released on application stop
 	// Take the lease before any other DB operations
 	var leaseLock pg.LeaseLock
-	if cfg.DatabaseLockingMode() == "lease" || cfg.DatabaseLockingMode() == "dual" {
-		leaseLock = pg.NewLeaseLock(db, appID, appLggr, cfg.LeaseLockRefreshInterval(), cfg.LeaseLockDuration())
+	if dbLockingMode == "lease" || dbLockingMode == "dual" {
+		leaseLock = pg.NewLeaseLock(db, appID, lggr, cfg.LeaseLockRefreshInterval(lggr), cfg.LeaseLockDuration(lggr))
 		if err = leaseLock.TakeAndHold(); err != nil {
 			return nil, errors.Wrap(err, "failed to take initial lease on database")
 		}
@@ -176,31 +180,31 @@ func (n ChainlinkAppFactory) NewApplication(cfg config.GeneralConfig) (chainlink
 
 	// Try to acquire an advisory lock to prevent multiple nodes starting at the same time
 	var advisoryLock pg.Locker
-	if cfg.DatabaseLockingMode() == "advisorylock" || cfg.DatabaseLockingMode() == "dual" {
+	if dbLockingMode == "advisorylock" || dbLockingMode == "dual" {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		advisoryLock, err = AdvisoryLock(ctx, appLggr, db.DB, time.Second)
+		advisoryLock, err = AdvisoryLock(ctx, lggr, db.DB, time.Second)
 		if err != nil {
 			return nil, errors.Wrap(err, "error acquiring lock")
 		}
 	}
 
-	keyStore := keystore.New(db, utils.GetScryptParams(cfg), appLggr, cfg)
+	keyStore := keystore.New(db, utils.GetScryptParams(cfg), lggr, cfg)
 
 	// Set up the versioning ORM
-	verORM := versioning.NewORM(db, appLggr)
+	verORM := versioning.NewORM(db, lggr)
 
 	// Set up periodic backup
-	if cfg.DatabaseBackupMode() != config.DatabaseBackupModeNone {
+	if cfg.DatabaseBackupMode(lggr) != config.DatabaseBackupModeNone {
 		var version *versioning.NodeVersion
 		var versionString string
 
 		version, err = verORM.FindLatestNodeVersion()
 		if err != nil {
 			if errors.Is(err, sql.ErrNoRows) {
-				appLggr.Debugf("Failed to find any node version in the DB: %w", err)
+				lggr.Debugf("Failed to find any node version in the DB: %w", err)
 			} else if strings.Contains(err.Error(), "relation \"node_versions\" does not exist") {
-				appLggr.Debugf("Failed to find any node version in the DB, the node_versions table does not exist yet: %w", err)
+				lggr.Debugf("Failed to find any node version in the DB, the node_versions table does not exist yet: %w", err)
 			} else {
 				return nil, errors.Wrap(err, "initializeORM#FindLatestNodeVersion")
 			}
@@ -210,21 +214,24 @@ func (n ChainlinkAppFactory) NewApplication(cfg config.GeneralConfig) (chainlink
 			versionString = version.Version
 		}
 
-		databaseBackup := periodicbackup.NewDatabaseBackup(cfg, appLggr)
-		databaseBackup.RunBackupGracefully(versionString)
+		if databaseBackup, err := periodicbackup.NewDatabaseBackup(cfg, lggr); err != nil {
+			return nil, errors.Wrap(err, "initialize#NewDatabaseBackup")
+		} else {
+			databaseBackup.RunBackupGracefully(versionString)
+		}
 	}
 
 	// Check before migration so we don't do anything destructive to the
 	// database if this app version is too old
 	if static.Version != "unset" {
-		if err = versioning.CheckVersion(db, appLggr, static.Version); err != nil {
+		if err = versioning.CheckVersion(db, lggr, static.Version); err != nil {
 			return nil, errors.Wrap(err, "CheckVersion")
 		}
 	}
 
 	// Migrate the database
 	if cfg.MigrateDatabase() {
-		if err = migrate.Migrate(db.DB, appLggr); err != nil {
+		if err = migrate.Migrate(db.DB, lggr); err != nil {
 			return nil, errors.Wrap(err, "initializeORM#Migrate")
 		}
 	}
@@ -238,15 +245,19 @@ func (n ChainlinkAppFactory) NewApplication(cfg config.GeneralConfig) (chainlink
 	}
 
 	if cfg.UseLegacyEthEnvVars() {
-		if err = evm.ClobberDBFromEnv(db, cfg, appLggr); err != nil {
+		if err = evm.ClobberDBFromEnv(db, cfg, lggr); err != nil {
 			return nil, err
 		}
 	}
 
-	eventBroadcaster := pg.NewEventBroadcaster(cfg.DatabaseURL(), cfg.DatabaseListenerMinReconnectInterval(), cfg.DatabaseListenerMaxReconnectDuration(), appLggr, appID)
+	dbURL, err := cfg.DatabaseURL()
+	if err != nil {
+		return nil, err
+	}
+	eventBroadcaster := pg.NewEventBroadcaster(dbURL, cfg.DatabaseListenerMinReconnectInterval(nil), cfg.DatabaseListenerMaxReconnectDuration(lggr), lggr, appID)
 	ccOpts := evm.ChainSetOpts{
 		Config:           cfg,
-		Logger:           appLggr,
+		Logger:           lggr,
 		DB:               db,
 		ORM:              evm.NewORM(db),
 		KeyStore:         keyStore.Eth(),
@@ -254,9 +265,9 @@ func (n ChainlinkAppFactory) NewApplication(cfg config.GeneralConfig) (chainlink
 	}
 	chainSet, err := evm.LoadChainSet(ccOpts)
 	if err != nil {
-		appLggr.Fatal(err)
+		lggr.Fatal(err)
 	}
-	externalInitiatorManager := webhook.NewExternalInitiatorManager(db, utils.UnrestrictedClient, appLggr, cfg)
+	externalInitiatorManager := webhook.NewExternalInitiatorManager(db, utils.UnrestrictedClient, lggr, cfg)
 	return chainlink.NewApplication(chainlink.ApplicationOpts{
 		Config:                   cfg,
 		ShutdownSignal:           shutdownSignal,
@@ -264,7 +275,7 @@ func (n ChainlinkAppFactory) NewApplication(cfg config.GeneralConfig) (chainlink
 		KeyStore:                 keyStore,
 		ChainSet:                 chainSet,
 		EventBroadcaster:         eventBroadcaster,
-		Logger:                   appLggr,
+		Logger:                   lggr,
 		ExternalInitiatorManager: externalInitiatorManager,
 		Version:                  static.Version,
 		AdvisoryLock:             advisoryLock,
@@ -301,25 +312,27 @@ func (n ChainlinkRunner) Run(app chainlink.Application) error {
 	handler := web.Router(app.(*chainlink.ChainlinkApplication), prometheus)
 	var g errgroup.Group
 
-	if config.Port() == 0 && config.TLSPort() == 0 {
-		log.Fatal("You must specify at least one port to listen on")
+	port := config.Port(app.GetLogger())
+	if port == 0 && config.TLSPort(app.GetLogger()) == 0 {
+		app.GetLogger().Fatal("You must specify at least one port to listen on")
 	}
 
 	server := server{handler: handler, lggr: app.GetLogger()}
 
-	if config.Port() != 0 {
+	httpServerTimeout := config.HTTPServerWriteTimeout(app.GetLogger())
+	if port != 0 {
 		g.Go(func() error {
-			return server.run(config.Port(), config.HTTPServerWriteTimeout())
+			return server.run(port, httpServerTimeout)
 		})
 	}
 
-	if config.TLSPort() != 0 {
+	if tlsPort := config.TLSPort(app.GetLogger()); tlsPort != 0 {
 		g.Go(func() error {
 			return server.runTLS(
-				config.TLSPort(),
-				config.CertFile(),
-				config.KeyFile(),
-				config.HTTPServerWriteTimeout())
+				tlsPort,
+				config.CertFile(app.GetLogger()),
+				config.KeyFile(app.GetLogger()),
+				httpServerTimeout)
 		})
 	}
 
@@ -560,7 +573,7 @@ func (m *MemoryCookieStore) Retrieve() (*http.Cookie, error) {
 }
 
 type DiskCookieConfig interface {
-	RootDir() string
+	RootDir(logger.Logger) string
 }
 
 // DiskCookieStore saves a single cookie in the local cli working directory.
@@ -593,7 +606,7 @@ func (d DiskCookieStore) Retrieve() (*http.Cookie, error) {
 }
 
 func (d DiskCookieStore) cookiePath() string {
-	return path.Join(d.Config.RootDir(), "cookie")
+	return path.Join(d.Config.RootDir(nil), "cookie")
 }
 
 // SessionRequestBuilder is an interface that returns a SessionRequest,

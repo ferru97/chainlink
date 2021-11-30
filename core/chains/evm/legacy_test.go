@@ -22,20 +22,20 @@ type legacyEthNodeConfig struct {
 	ethereumSecondaryURLs []url.URL
 }
 
-func (c legacyEthNodeConfig) DefaultChainID() *big.Int {
-	return c.defaultChainID
+func (c legacyEthNodeConfig) DefaultChainID() (*big.Int, error) {
+	return c.defaultChainID, nil
 }
 
 func (c legacyEthNodeConfig) EthereumURL() string {
 	return c.ethereumURL
 }
 
-func (c legacyEthNodeConfig) EthereumHTTPURL() *url.URL {
-	return c.ethereumHTTPURL
+func (c legacyEthNodeConfig) EthereumHTTPURL() (*url.URL, error) {
+	return c.ethereumHTTPURL, nil
 }
 
-func (c legacyEthNodeConfig) EthereumSecondaryURLs() []url.URL {
-	return c.ethereumSecondaryURLs
+func (c legacyEthNodeConfig) EthereumSecondaryURLs() ([]url.URL, error) {
+	return c.ethereumSecondaryURLs, nil
 }
 
 func Test_ClobberDBFromEnv(t *testing.T) {

@@ -1471,7 +1471,9 @@ func TestEthBroadcaster_EthTxInsertEventCausesTriggerToFire(t *testing.T) {
 
 	ethKeyStore := cltest.NewKeyStore(t, db, cfg).Eth()
 	_, fromAddress := cltest.MustAddRandomKeyToKeystore(t, ethKeyStore)
-	eventBroadcaster := cltest.NewEventBroadcaster(t, evmcfg.DatabaseURL())
+	dbURL, err := evmcfg.DatabaseURL()
+	require.NoError(t, err)
+	eventBroadcaster := cltest.NewEventBroadcaster(t, dbURL)
 	require.NoError(t, eventBroadcaster.Start())
 	t.Cleanup(func() { require.NoError(t, eventBroadcaster.Close()) })
 

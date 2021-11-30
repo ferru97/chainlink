@@ -189,9 +189,9 @@ func (ex *UpkeepExecuter) execute(upkeep UpkeepRegistration, headNumber int64, d
 			"fromAddress":           upkeep.Registry.FromAddress.String(),
 			"contractAddress":       upkeep.Registry.ContractAddress.String(),
 			"upkeepID":              upkeep.UpkeepID,
-			"performUpkeepGasLimit": upkeep.ExecuteGas + ex.orm.config.KeeperRegistryPerformGasOverhead(),
-			"checkUpkeepGasLimit": ex.config.KeeperRegistryCheckGasOverhead() + uint64(upkeep.Registry.CheckGas) +
-				ex.config.KeeperRegistryPerformGasOverhead() + upkeep.ExecuteGas,
+			"performUpkeepGasLimit": upkeep.ExecuteGas + ex.orm.config.KeeperRegistryPerformGasOverhead(ex.logger),
+			"checkUpkeepGasLimit": ex.config.KeeperRegistryCheckGasOverhead(ex.logger) + uint64(upkeep.Registry.CheckGas) +
+				ex.config.KeeperRegistryPerformGasOverhead(ex.logger) + upkeep.ExecuteGas,
 			"gasPrice":  gasPrice,
 			"gasTipCap": fee.TipCap,
 			"gasFeeCap": fee.FeeCap,

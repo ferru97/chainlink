@@ -115,50 +115,60 @@ type EnvPrinter struct {
 // NewConfigPrinter creates an instance of ConfigPrinter
 func NewConfigPrinter(cfg GeneralConfig) (ConfigPrinter, error) {
 	explorerURL := ""
-	if cfg.ExplorerURL() != nil {
-		explorerURL = cfg.ExplorerURL().String()
+	if cfg.ExplorerURL(nil) != nil {
+		explorerURL = cfg.ExplorerURL(nil).String()
 	}
 	p2pBootstrapPeers, _ := cfg.P2PBootstrapPeers()
+	var defaultChainIDStr string
+	if defaultChainID, _ := cfg.DefaultChainID(); defaultChainID != nil {
+		defaultChainIDStr = defaultChainID.String()
+	}
 	ethereumHTTPURL := ""
-	if cfg.EthereumHTTPURL() != nil {
-		ethereumHTTPURL = cfg.EthereumHTTPURL().String()
+	if ethURL, err := cfg.EthereumHTTPURL(); err != nil {
+		return ConfigPrinter{}, err
+	} else if ethURL != nil {
+		ethereumHTTPURL = ethURL.String()
+	}
+	eth2ndURLs, err := cfg.EthereumSecondaryURLs()
+	if err != nil {
+		return ConfigPrinter{}, err
 	}
 	telemetryIngressURL := ""
-	if cfg.TelemetryIngressURL() != nil {
-		telemetryIngressURL = cfg.TelemetryIngressURL().String()
+	if cfg.TelemetryIngressURL(nil) != nil {
+		telemetryIngressURL = cfg.TelemetryIngressURL(nil).String()
 	}
-	ocrTransmitTimeout, _ := cfg.GlobalOCRContractTransmitterTransmitTimeout()
-	ocrDatabaseTimeout, _ := cfg.GlobalOCRDatabaseTimeout()
+	ocrTransmitTimeout, _ := cfg.GlobalOCRContractTransmitterTransmitTimeout(nil)
+	ocrDatabaseTimeout, _ := cfg.GlobalOCRDatabaseTimeout(nil)
 	return ConfigPrinter{
 		EnvPrinter: EnvPrinter{
 			AllowOrigins:                       cfg.AllowOrigins(),
-			BlockBackfillDepth:                 cfg.BlockBackfillDepth(),
-			BridgeResponseURL:                  cfg.BridgeResponseURL().String(),
+			BlockBackfillDepth:                 cfg.BlockBackfillDepth(nil),
+			BridgeResponseURL:                  cfg.BridgeResponseURL(nil).String(),
 			ClientNodeURL:                      cfg.ClientNodeURL(),
-			DatabaseBackupFrequency:            cfg.DatabaseBackupFrequency(),
-			DatabaseBackupMode:                 string(cfg.DatabaseBackupMode()),
-			DatabaseLockingMode:                cfg.DatabaseLockingMode(),
-			DefaultChainID:                     cfg.DefaultChainID().String(),
+			DatabaseBackupFrequency:            cfg.DatabaseBackupFrequency(nil),
+			DatabaseBackupMode:                 string(cfg.DatabaseBackupMode(nil)),
+			DatabaseLockingMode:                cfg.DatabaseLockingMode(nil),
+			DefaultChainID:                     defaultChainIDStr,
 			DefaultHTTPLimit:                   cfg.DefaultHTTPLimit(),
-			DefaultHTTPTimeout:                 cfg.DefaultHTTPTimeout(),
+			DefaultHTTPTimeout:                 cfg.DefaultHTTPTimeout(nil),
 			Dev:                                cfg.Dev(),
 			EthereumDisabled:                   cfg.EthereumDisabled(),
 			EthereumHTTPURL:                    ethereumHTTPURL,
-			EthereumSecondaryURLs:              mapToStringA(cfg.EthereumSecondaryURLs()),
+			EthereumSecondaryURLs:              mapToStringA(eth2ndURLs),
 			EthereumURL:                        cfg.EthereumURL(),
 			ExplorerURL:                        explorerURL,
 			FMDefaultTransactionQueueDepth:     cfg.FMDefaultTransactionQueueDepth(),
 			FeatureExternalInitiators:          cfg.FeatureExternalInitiators(),
-			FeatureOffchainReporting:           cfg.FeatureOffchainReporting(),
+			FeatureOffchainReporting:           cfg.FeatureOffchainReporting(nil),
 			InsecureFastScrypt:                 cfg.InsecureFastScrypt(),
 			JSONConsole:                        cfg.JSONConsole(),
-			JobPipelineReaperInterval:          cfg.JobPipelineReaperInterval(),
-			JobPipelineReaperThreshold:         cfg.JobPipelineReaperThreshold(),
+			JobPipelineReaperInterval:          cfg.JobPipelineReaperInterval(nil),
+			JobPipelineReaperThreshold:         cfg.JobPipelineReaperThreshold(nil),
 			KeeperDefaultTransactionQueueDepth: cfg.KeeperDefaultTransactionQueueDepth(),
 			KeeperGasPriceBufferPercent:        cfg.KeeperGasPriceBufferPercent(),
 			KeeperGasTipCapBufferPercent:       cfg.KeeperGasTipCapBufferPercent(),
-			LeaseLockDuration:                  cfg.LeaseLockDuration(),
-			LeaseLockRefreshInterval:           cfg.LeaseLockRefreshInterval(),
+			LeaseLockDuration:                  cfg.LeaseLockDuration(nil),
+			LeaseLockRefreshInterval:           cfg.LeaseLockRefreshInterval(nil),
 			LogLevel:                           LogLevel{Level: cfg.LogLevel()},
 			LogSQL:                             cfg.LogSQL(),
 			LogSQLMigrations:                   cfg.LogSQLMigrations(),
@@ -171,39 +181,39 @@ func NewConfigPrinter(cfg GeneralConfig) (ConfigPrinter, error) {
 			OCRTraceLogging:                       cfg.OCRTraceLogging(),
 
 			// P2P General
-			P2PIncomingMessageBufferSize: cfg.P2PIncomingMessageBufferSize(),
-			P2POutgoingMessageBufferSize: cfg.P2POutgoingMessageBufferSize(),
+			P2PIncomingMessageBufferSize: cfg.P2PIncomingMessageBufferSize(nil),
+			P2POutgoingMessageBufferSize: cfg.P2POutgoingMessageBufferSize(nil),
 			P2PNetworkingStack:           cfg.P2PNetworkingStackRaw(),
 			P2PPeerID:                    cfg.P2PPeerIDRaw(),
 
 			// P2PV1
 			P2PBootstrapPeers:         p2pBootstrapPeers,
-			P2PNewStreamTimeout:       cfg.P2PNewStreamTimeout(),
-			P2PBootstrapCheckInterval: cfg.P2PBootstrapCheckInterval(),
-			P2PDHTLookupInterval:      cfg.P2PDHTLookupInterval(),
-			P2PListenIP:               cfg.P2PListenIP().String(),
+			P2PNewStreamTimeout:       cfg.P2PNewStreamTimeout(nil),
+			P2PBootstrapCheckInterval: cfg.P2PBootstrapCheckInterval(nil),
+			P2PDHTLookupInterval:      cfg.P2PDHTLookupInterval(nil),
+			P2PListenIP:               cfg.P2PListenIP(nil).String(),
 			P2PListenPort:             cfg.P2PListenPortRaw(),
 
 			// P2PV2
 			P2PV2AnnounceAddresses: cfg.P2PV2AnnounceAddresses(),
 			P2PV2Bootstrappers:     cfg.P2PV2BootstrappersRaw(),
-			P2PV2DeltaDial:         cfg.P2PV2DeltaDial(),
-			P2PV2DeltaReconcile:    cfg.P2PV2DeltaReconcile(),
+			P2PV2DeltaDial:         cfg.P2PV2DeltaDial(nil),
+			P2PV2DeltaReconcile:    cfg.P2PV2DeltaReconcile(nil),
 			P2PV2ListenAddresses:   cfg.P2PV2ListenAddresses(),
 
-			Port:                          cfg.Port(),
-			ReaperExpiration:              cfg.ReaperExpiration(),
+			Port:                          cfg.Port(nil),
+			ReaperExpiration:              cfg.ReaperExpiration(nil),
 			ReplayFromBlock:               cfg.ReplayFromBlock(),
-			RootDir:                       cfg.RootDir(),
+			RootDir:                       cfg.RootDir(nil),
 			SecureCookies:                 cfg.SecureCookies(),
-			SessionTimeout:                cfg.SessionTimeout(),
+			SessionTimeout:                cfg.SessionTimeout(nil),
 			TLSHost:                       cfg.TLSHost(),
-			TLSPort:                       cfg.TLSPort(),
+			TLSPort:                       cfg.TLSPort(nil),
 			TLSRedirect:                   cfg.TLSRedirect(),
-			TelemetryIngressLogging:       cfg.TelemetryIngressLogging(),
+			TelemetryIngressLogging:       cfg.TelemetryIngressLogging(nil),
 			TelemetryIngressServerPubKey:  cfg.TelemetryIngressServerPubKey(),
 			TelemetryIngressURL:           telemetryIngressURL,
-			TriggerFallbackDBPollInterval: cfg.TriggerFallbackDBPollInterval(),
+			TriggerFallbackDBPollInterval: cfg.TriggerFallbackDBPollInterval(nil),
 		},
 	}, nil
 }

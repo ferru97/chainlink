@@ -5,6 +5,8 @@ package mocks
 import (
 	big "math/big"
 
+	logger "github.com/smartcontractkit/chainlink/core/logger"
+
 	mock "github.com/stretchr/testify/mock"
 
 	models "github.com/smartcontractkit/chainlink/core/store/models"
@@ -33,13 +35,13 @@ func (_m *Config) ChainID() *big.Int {
 	return r0
 }
 
-// DefaultHTTPTimeout provides a mock function with given fields:
-func (_m *Config) DefaultHTTPTimeout() models.Duration {
-	ret := _m.Called()
+// DefaultHTTPTimeout provides a mock function with given fields: _a0
+func (_m *Config) DefaultHTTPTimeout(_a0 logger.Logger) models.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 models.Duration
-	if rf, ok := ret.Get(0).(func() models.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) models.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(models.Duration)
 	}
@@ -61,13 +63,13 @@ func (_m *Config) Dev() bool {
 	return r0
 }
 
-// FeatureOffchainReporting provides a mock function with given fields:
-func (_m *Config) FeatureOffchainReporting() bool {
-	ret := _m.Called()
+// FeatureOffchainReporting provides a mock function with given fields: _a0
+func (_m *Config) FeatureOffchainReporting(_a0 logger.Logger) bool {
+	ret := _m.Called(_a0)
 
 	var r0 bool
-	if rf, ok := ret.Get(0).(func() bool); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) bool); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(bool)
 	}
@@ -89,13 +91,13 @@ func (_m *Config) LogSQL() bool {
 	return r0
 }
 
-// OCRBlockchainTimeout provides a mock function with given fields:
-func (_m *Config) OCRBlockchainTimeout() time.Duration {
-	ret := _m.Called()
+// OCRBlockchainTimeout provides a mock function with given fields: _a0
+func (_m *Config) OCRBlockchainTimeout(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -117,13 +119,13 @@ func (_m *Config) OCRContractConfirmations() uint16 {
 	return r0
 }
 
-// OCRContractPollInterval provides a mock function with given fields:
-func (_m *Config) OCRContractPollInterval() time.Duration {
-	ret := _m.Called()
+// OCRContractPollInterval provides a mock function with given fields: _a0
+func (_m *Config) OCRContractPollInterval(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -131,13 +133,13 @@ func (_m *Config) OCRContractPollInterval() time.Duration {
 	return r0
 }
 
-// OCRContractSubscribeInterval provides a mock function with given fields:
-func (_m *Config) OCRContractSubscribeInterval() time.Duration {
-	ret := _m.Called()
+// OCRContractSubscribeInterval provides a mock function with given fields: _a0
+func (_m *Config) OCRContractSubscribeInterval(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
@@ -187,13 +189,13 @@ func (_m *Config) OCRObservationGracePeriod() time.Duration {
 	return r0
 }
 
-// OCRObservationTimeout provides a mock function with given fields:
-func (_m *Config) OCRObservationTimeout() time.Duration {
-	ret := _m.Called()
+// OCRObservationTimeout provides a mock function with given fields: _a0
+func (_m *Config) OCRObservationTimeout(_a0 logger.Logger) time.Duration {
+	ret := _m.Called(_a0)
 
 	var r0 time.Duration
-	if rf, ok := ret.Get(0).(func() time.Duration); ok {
-		r0 = rf()
+	if rf, ok := ret.Get(0).(func(logger.Logger) time.Duration); ok {
+		r0 = rf(_a0)
 	} else {
 		r0 = ret.Get(0).(time.Duration)
 	}
